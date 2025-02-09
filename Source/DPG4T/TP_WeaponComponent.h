@@ -79,7 +79,7 @@ public:
 	UAnimMontage* FPFireAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPADSAnimation = nullptr;
+	UAnimSequence* FPADSAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FPFireADSAnimation = nullptr;

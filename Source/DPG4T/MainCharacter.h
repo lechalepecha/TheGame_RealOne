@@ -296,6 +296,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	bool ADSing;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
 	UAnimMontage* DefaultFPMeleeAnimation = nullptr;
 

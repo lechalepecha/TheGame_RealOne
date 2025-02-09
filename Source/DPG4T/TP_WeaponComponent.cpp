@@ -402,6 +402,7 @@ void UTP_WeaponComponent::ExitADS(bool IsFast)
 void UTP_WeaponComponent::ADSTLCallback(float val)
 {
 	IWeaponWielderInterface::Execute_OnADSTLUpdate(WeaponWielder, val);
+	UE_LOG(LogTemp, Error, TEXT("ADSTL calling back"));
 }
 
 //Call this function when the firing begins, the recoil starts here
@@ -496,7 +497,7 @@ void UTP_WeaponComponent::RecoilRecoveryTimerCallback()
 	//Recoil resetting
 	FRotator originalRotator = IWeaponWielderInterface::Execute_GetWielderControlRotation(WeaponWielder);
 	FRotator tmprot = originalRotator;
-	float deltaPitch = UKismetMathLibrary::NormalizedDeltaRotator(tmprot, RecoilStartRot).Pitch;
+	float deltaPitch = UKismetMathLibrary::NormalizedDeltaRotator(tmprot, RecoilStartRot ).Pitch;
 	if (deltaPitch > 0)
 	{
 		FRotator TargetRot = originalRotator - RecoilDeltaRot;

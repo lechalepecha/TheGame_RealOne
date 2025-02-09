@@ -99,6 +99,7 @@ void UFPAnimInstance::SetCurrentWeapon(UTP_WeaponComponent* Weapon)
 	{
 		CurrentWeapon = Weapon;
 		CurrentWeaponIdlePose = CurrentWeapon->FPIdlePoseAnimation;
+		CurrentWeaponADSIdlePose = CurrentWeapon->FPADSAnimation;
 		IsLeftHandIKActive = true;
 		EquipTime = CurrentWeapon->EquipTime;
 		IsHasWeapon = true;
@@ -134,6 +135,7 @@ void UFPAnimInstance::SetSightTransform()
 
 	SightTransform.SetLocation(relativeTransform.GetLocation() + relativeTransform.GetRotation().GetForwardVector() * CurrentWeapon->Sight_ForwardLength);
 	SightTransform.SetRotation(relativeTransform.Rotator().Quaternion());
+	//CurrentWeaponIdlePose = CurrentWeapon->FPADSAnimation;
 
 }
 
@@ -152,6 +154,7 @@ void UFPAnimInstance::ModifyForADS()
 	WalkAnimAlpha = WalkAnimAlpha * WalkADSModifier_Alpha_Lerp;
 	//WalkAnimAlpha = WalkAnimAlpha * ADS_Alpha_Inversed;
 	DipAlpha = DipAlpha * DipADSModifier_Alpha_Lerp;
+
 }
 
 void UFPAnimInstance::ModifyForSprint(float DeltaSeconds)

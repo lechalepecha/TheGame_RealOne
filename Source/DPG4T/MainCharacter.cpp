@@ -1125,10 +1125,14 @@ void AMainCharacter::OnWeaponStopReloadAnimation_Implementation(float blendTime)
 
 void AMainCharacter::OnADSTLUpdate_Implementation(float TLValue)
 {
+
 	if (!IsValid(CurrentWeapon) || CurrentWeapon->MPC_FP == nullptr)
 	{
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ADSTL call back called back"));
+
 
 	CurrentWeapon->ADSAlpha = TLValue;
 	CurrentWeapon->ADSAlphaLerp = FMath::Lerp(0.2f, 1.f, (1.f - CurrentWeapon->ADSAlpha));
@@ -1209,7 +1213,15 @@ void AMainCharacter::PressedFire()
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle.Invalidate();
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->RecoilStart();
 
-	GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireAnimation, 1.25f);
+	if (ADSing)
+	{
+		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireADSAnimation, 1.25f);
+
+	}
+	else
+	{
+		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireAnimation, 1.25f);
+	}
 
 	switch (IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireMode)
 	{
@@ -1263,9 +1275,9 @@ void AMainCharacter::PressedSwitchFireMode()
 void AMainCharacter::PressedADS()
 {
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
-	UE_LOG(LogTemp, Error, TEXT("ADSed"));
+	//UE_LOG(LogTemp, Error, TEXT("ADSed"));
 
-
+	ADSing = true;
 	EnterADS();
 }
 
@@ -1289,6 +1301,7 @@ void AMainCharacter::EnterADS()
 
 void AMainCharacter::ReleasedADS()
 {
+	ADSing = false;
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = false;
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADSTL->Reverse();
 }

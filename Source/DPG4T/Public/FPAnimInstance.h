@@ -156,6 +156,9 @@ protected:
 	UAnimSequence* CurrentWeaponIdlePose = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = ExposedProperties)
+	UAnimSequence* CurrentWeaponADSIdlePose = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = ExposedProperties)
 	ECustomMovementMode MoveMode;
 
 	UPROPERTY(BlueprintReadOnly, Category = ExposedProperties)
