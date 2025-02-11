@@ -583,6 +583,7 @@ void UTP_WeaponComponent::Reload()
 	IsReloading = true;
 
 	ExitADS(false);
+	IWeaponWielderInterface::Execute_OnReloadSuccess(WeaponWielder);
 	IWeaponWielderInterface::Execute_OnWeaponReload(WeaponWielder);
 }
 
