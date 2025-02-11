@@ -1260,7 +1260,8 @@ void AMainCharacter::PressedFire()
 		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, false);
 		break;
 	case EFireMode::Alternate:
-		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this), &UTP_WeaponComponent::BurstFire, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, true, 0.f);
+		IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->AlternateFire();
+		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, false);
 		break;
 	case EFireMode::Auto:
 		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this), &UTP_WeaponComponent::FullAutoFire, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, true, 0.f);
@@ -1279,12 +1280,15 @@ void AMainCharacter::PressedReload()
 {
 	if (GetIsMeleeing())
 	{
+		UE_LOG(LogTemp, Error, TEXT("Player was meleeing"));
 		return;
 	}
 	if (!CanAct())
 	{
+		UE_LOG(LogTemp, Error, TEXT("Player could'nt act"));
 		ForceStopSprint();
 	}
+	UE_LOG(LogTemp, Error, TEXT("Player trying to reload"));
 
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->Reload();
 }

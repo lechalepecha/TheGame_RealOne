@@ -92,7 +92,7 @@ void UTP_WeaponComponent::SingleFire()
 	StopFire();
 }
 
-void UTP_WeaponComponent::BurstFire()
+/*void UTP_WeaponComponent::BurstFire()
 {
 	Fire();
 	BurstFireCurrent++;
@@ -106,6 +106,234 @@ void UTP_WeaponComponent::BurstFire()
 		BurstFireCurrent = 0;
 		StopFire();
 	}
+}*/
+
+void UTP_WeaponComponent::AlternateFire()
+{
+	switch (AmmoType)
+	{
+	case EAmmoType::None:
+		break;
+	case EAmmoType::Primary:
+		RicochetFire();
+
+		StopFire();
+		break;
+	case EAmmoType::Special:
+		AOEFire();
+
+		StopFire();
+		break;
+	case EAmmoType::Heavy:
+		break;
+	default:
+		break;
+	}
+}
+
+void UTP_WeaponComponent::RicochetFire()
+{
+	if (!CanFire || IsReloading || IsEquipping || IsStowing || GetWorld()->GetTimerManager().GetTimerRemaining(FireRateDelayTimerHandle) > 0)
+	{
+		return;
+	}
+
+	if (CurrentMagazineCount <= 0)
+	{
+		StopFire();
+		IsWielderHoldingShootButton = false;
+		if (IsValid(DryFireSound))
+		{
+			UGameplayStatics::SpawnSoundAttached(
+				DryFireSound,
+				this
+			);
+		}
+
+		if (IWeaponWielderInterface::Execute_GetRemainingAmmo(WeaponWielder) > 0)
+		{
+			Reload();
+			return;
+		}
+		return;
+	}
+
+	// Trace from center screen to max weapon range
+	FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
+	FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
+	float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
+	TArray<FHitResult> MuzzleTraceResults;
+	for (int32 i = 0; i < Pellets; i++) // bruh idk if this is a good idea, but whatever man
+	{
+		FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (i / PelletSpread));
+		FVector ResultingVector = RandomDirection * Range;
+		FVector EndVector = StartVector + ResultingVector;
+
+		FHitResult WielderTraceResult{};
+		FCollisionQueryParams Params = FCollisionQueryParams();
+		Params.AddIgnoredActor(GetOwner());
+		Params.AddIgnoredActor(WeaponWielder);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(
+			WielderTraceResult,
+			StartVector,
+			EndVector,
+			ECollisionChannel::ECC_GameTraceChannel2,
+			Params
+		);
+
+		// Trace from weapon muzzle to center trace hit location
+
+		FVector EndTrace{};
+		if (isHit)
+		{
+			FVector ScaledDirection = RandomDirection * 10.f;
+			EndTrace = WielderTraceResult.Location + ScaledDirection;
+		}
+		else
+		{
+			EndTrace = WielderTraceResult.TraceEnd;
+		}
+
+		Params.bReturnPhysicalMaterial = true;
+		FHitResult MuzzleTraceResult{};
+		GetWorld()->LineTraceSingleByChannel(
+			MuzzleTraceResult,
+			GetSocketLocation(MuzzleSocketName),
+			EndTrace,
+			ECollisionChannel::ECC_GameTraceChannel2,
+			Params
+		);
+		MuzzleTraceResults.Add(MuzzleTraceResult);
+
+		if (Reflections > 0)
+		{
+			for (int j = 0; j < CurrentMagazineCount; j++)
+			{
+				if (MuzzleTraceResult.bBlockingHit)
+				{
+					FVector UDirection = UKismetMathLibrary::GetDirectionUnitVector(MuzzleTraceResult.TraceStart, MuzzleTraceResult.TraceEnd);
+					FVector MirroredDir = UKismetMathLibrary::MirrorVectorByNormal(UDirection, MuzzleTraceResult.ImpactNormal);
+
+					FVector ScaledDiretcion = MirroredDir * 2500.f;
+
+					FVector Start = MuzzleTraceResult.ImpactPoint + MirroredDir;
+					FVector End = MuzzleTraceResult.ImpactPoint + ScaledDiretcion;
+
+					GetWorld()->LineTraceSingleByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel12, Params);
+					DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
+
+				}
+			}
+		}
+
+
+		MuzzleTraceResults.Add(MuzzleTraceResult);
+		DrawDebugLine(GetWorld(), GetSocketLocation(MuzzleSocketName), EndVector, FColor::Blue, false, 5.0f);
+	}
+	CurrentMagazineCount = 0;
+	OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
+
+	// Try and play a firing animation for the weapon mesh if specified
+	if (WeaponMeshFireAnimation != nullptr)
+	{
+		SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		PlayAnimation(WeaponMeshFireAnimation, false);
+
+	}
+
+	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
+
+	UE_LOG(LogTemp, Error, TEXT("Fired Alternate fire mode for PRIMARY ammo type weapon RICOCHET"));
+
+}
+
+void UTP_WeaponComponent::AOEFire()
+{
+	if (!CanFire || IsReloading || IsEquipping || IsStowing || GetWorld()->GetTimerManager().GetTimerRemaining(FireRateDelayTimerHandle) > 0)
+	{
+		return;
+	}
+
+	if (CurrentMagazineCount <= 0)
+	{
+		StopFire();
+		IsWielderHoldingShootButton = false;
+		if (IsValid(DryFireSound))
+		{
+			UGameplayStatics::SpawnSoundAttached(
+				DryFireSound,
+				this
+			);
+		}
+
+		if (IWeaponWielderInterface::Execute_GetRemainingAmmo(WeaponWielder) > 0)
+		{
+			Reload();
+			return;
+		}
+		return;
+	}
+
+	// Try and fire a projectile
+	if (IsProjectileWeapon)
+	{
+		UWorld* const World = GetWorld();
+		if (World != nullptr)
+		{
+			FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
+			FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
+			float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
+			FHitResult MuzzleTraceResult;
+
+			FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (1 / PelletSpread));
+			FVector ResultingVector = RandomDirection * Range;
+			FVector EndVector = StartVector + ResultingVector;
+
+			FHitResult WielderTraceResult{};
+			FCollisionQueryParams Params = FCollisionQueryParams();
+			Params.AddIgnoredActor(GetOwner());
+			Params.AddIgnoredActor(WeaponWielder);
+			bool isHit = GetWorld()->LineTraceSingleByChannel(
+				WielderTraceResult,
+				StartVector,
+				EndVector,
+				ECollisionChannel::ECC_GameTraceChannel2,
+				Params
+			);
+
+			// Trace from weapon muzzle to center trace hit location
+
+			FVector EndTrace{};
+			if (isHit)
+			{
+				FVector ScaledDirection = RandomDirection * 10.f;
+				EndTrace = WielderTraceResult.Location + ScaledDirection;
+			}
+			else
+			{
+				EndTrace = WielderTraceResult.TraceEnd;
+			}
+
+			Params.bReturnPhysicalMaterial = true;
+			GetWorld()->LineTraceSingleByChannel(
+				MuzzleTraceResult,
+				GetSocketLocation(MuzzleSocketName),
+				EndTrace,
+				ECollisionChannel::ECC_GameTraceChannel2,
+				Params
+			);
+
+			CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
+			OnWeaponProjectileFireDelegate.Broadcast(MuzzleTraceResult); // projectile is spawned in bp
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("wrong weapon type, weapon must be projectile"));
+
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Fired Alternate fire mode for SPECIAL ammo type weapon AOE"));
 }
 
 void UTP_WeaponComponent::FullAutoFire()
@@ -250,35 +478,9 @@ void UTP_WeaponComponent::Fire()
 			);
 			MuzzleTraceResults.Add(MuzzleTraceResult);
 
-			if (Reflections > 0)
-			{
-				for (int j = 0; j < CurrentMagazineCount; j++)
-				{
-					if (MuzzleTraceResult.bBlockingHit)
-					{
-						FVector UDirection = UKismetMathLibrary::GetDirectionUnitVector(MuzzleTraceResult.TraceStart, MuzzleTraceResult.TraceEnd);
-						FVector MirroredDir = UKismetMathLibrary::MirrorVectorByNormal(UDirection, MuzzleTraceResult.ImpactNormal);
-						
-						FVector ScaledDiretcion = MirroredDir * 2500.f;
-
-						FVector Start = MuzzleTraceResult.ImpactPoint + MirroredDir;
-						FVector End = MuzzleTraceResult.ImpactPoint + ScaledDiretcion;
-
-						GetWorld()->LineTraceSingleByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel12, Params);
-						DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
-
-					}
-				}
-			}
-			
-
-			MuzzleTraceResults.Add(MuzzleTraceResult);
-			DrawDebugLine(GetWorld(), GetSocketLocation(MuzzleSocketName), EndVector, FColor::Blue, false, 5.0f);
 		}
 		CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
 		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
-
-
 	}
 
 	// Try and play a firing animation for the weapon mesh if specified
@@ -402,7 +604,6 @@ void UTP_WeaponComponent::ExitADS(bool IsFast)
 void UTP_WeaponComponent::ADSTLCallback(float val)
 {
 	IWeaponWielderInterface::Execute_OnADSTLUpdate(WeaponWielder, val);
-	UE_LOG(LogTemp, Error, TEXT("ADSTL calling back"));
 }
 
 //Call this function when the firing begins, the recoil starts here

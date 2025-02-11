@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	bool IsProjectileWeapon = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Melee)
+	bool IsMeleeWeapon = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UMaterialInstance* FP_Material = nullptr;
 
@@ -173,6 +176,12 @@ public:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Fire();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void RicochetFire();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AOEFire();
 
 	// weapon fire effect (Shell eject, muzzle flash, tracer) implemented in blueprint but called from cpp (Fire() function)
 	UPROPERTY(BlueprintAssignable)
@@ -362,7 +371,7 @@ public:
 	void SingleFire();
 
 	UFUNCTION(BlueprintCallable)
-	void BurstFire();
+	void AlternateFire();
 
 	UFUNCTION(BlueprintCallable)
 	void FullAutoFire();
