@@ -72,9 +72,9 @@ void UTP_WeaponComponent::SwitchFireMode()
 	switch (FireMode)
 	{
 	case EFireMode::Single:
-		FireMode = EFireMode::Burst;
+		FireMode = EFireMode::Alternate;
 		break;
-	case EFireMode::Burst:
+	case EFireMode::Alternate:
 		FireMode = EFireMode::Auto;
 		break;
 	case EFireMode::Auto:

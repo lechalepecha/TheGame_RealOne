@@ -1259,7 +1259,7 @@ void AMainCharacter::PressedFire()
 		IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->SingleFire();
 		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, false);
 		break;
-	case EFireMode::Burst:
+	case EFireMode::Alternate:
 		GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this), &UTP_WeaponComponent::BurstFire, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, true, 0.f);
 		break;
 	case EFireMode::Auto:

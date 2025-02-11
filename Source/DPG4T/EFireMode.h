@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class EFireMode : uint8
 {
     Single,
-    Burst,
-    Auto
+    Alternate,
+    Auto,
+
 };
