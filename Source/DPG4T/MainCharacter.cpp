@@ -426,7 +426,7 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
 		GetCharacterMovement()->BrakingDecelerationFalling = 93000.f;
 
-		GetController()->SetIgnoreMoveInput(true);
+		//GetController()->SetIgnoreMoveInput(true);
 
 		LastVelocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0.f);
 
@@ -449,7 +449,7 @@ void AMainCharacter::EndDash()
 	GetCharacterMovement()->GravityScale = 1.5f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 200.f;
 
-	GetController()->SetIgnoreMoveInput(false);
+	//GetController()->SetIgnoreMoveInput(false);
 	GetCharacterMovement()->Velocity = LastVelocity;
 
 	if (DashesLeft != 0)
