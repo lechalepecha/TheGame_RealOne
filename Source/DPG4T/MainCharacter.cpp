@@ -105,6 +105,21 @@ AMainCharacter::AMainCharacter()
 	CrouchAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	CrouchTL->AddInterpFloat(CrouchAlphaCurve, onCrouchTLCallback);
 
+	DashCamTL = CreateDefaultSubobject<UTimelineComponent>(FName("DashCamTL"));
+	DashCamTL->SetTimelineLength(0.12f);
+	DashCamTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+
+	FOnTimelineFloat onDashCamTLCallback;
+	onDashCamTLCallback.BindUFunction(this, FName{ TEXT("DashCamUpdateTLCallback") });
+	DashCamAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("DashCamAlphaCurve"));
+	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
+	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.15f, 1.f);
+	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.25f, 0.f);
+	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	DashCamTL->AddInterpFloat(DashCamAlphaCurve, onDashCamTLCallback);
+
 	SprintTL = CreateDefaultSubobject<UTimelineComponent>(FName("SprintTL"));
 	SprintTL->SetTimelineLength(0.2f);
 	SprintTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
@@ -403,7 +418,7 @@ void AMainCharacter::StartDash()
 {
 	if (DashesLeft != 0)
 	{
-		GetWorldTimerManager().SetTimer(DashTime, this, &AMainCharacter::EndDash, 0.12f, true);
+		GetWorldTimerManager().SetTimer(DashTime, this, &AMainCharacter::EndDash, 0.25f, true);
 
 		FVector CurrentVelocity = GetCharacterMovement()->Velocity;
 		GetCharacterMovement()->GravityScale = 0.f;
@@ -421,6 +436,8 @@ void AMainCharacter::StartDash()
 		DashDirection.Y = FMath::Clamp(DashDirection.Y, -10000.f, 10000.f);
 
 		GetCharacterMovement()->Velocity = FVector(DashDirection.X, DashDirection.Y, 0);
+
+		DashCamTL->PlayFromStart();
 	}
 }
 
@@ -452,7 +469,19 @@ void AMainCharacter::EndDash()
 	GetWorld()->GetTimerManager().ClearTimer(DashTime);
 	DashTime.Invalidate();
 	Dip(1.8f, 0.6f);
+
 }
+
+void AMainCharacter::DashCamUpdateTLCallback(float val)
+{
+	DashCamAlpha = val;
+
+	UCameraComponent* camera = GetFirstPersonCameraComponent();
+
+	float NewCamFov = FMath::Lerp(90.f, 110.f, DashCamAlpha);
+	camera->SetFieldOfView(NewCamFov);
+}
+
 
 void AMainCharacter::DashRollbackEnded()
 {
@@ -1550,6 +1579,7 @@ void AMainCharacter::SlideTLCallback(float val)
 
 	AddMovementInput(SlideDirection, SlideAlpha, true);
 }
+
 
 void AMainCharacter::FinishedSlideDelegate()
 {

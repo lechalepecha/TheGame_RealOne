@@ -152,6 +152,18 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	float SlideAlpha;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	UTimelineComponent* DashCamTL = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* DashCamAlphaCurve = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void DashCamUpdateTLCallback(float val);
+
+	float DashCamAlpha;
+
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void FinishedSlideDelegate();
 
