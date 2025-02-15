@@ -63,8 +63,6 @@ void ACustomProjectile::BeginPlay()
 		RotateToTarget();
 	}
 
-	GetWorldTimerManager().SetTimer(DamageTimerHandle, this,  &ACustomProjectile::OnRadialDamage, DamageInterval, true);
-
 }
 
 // Called every frame
@@ -98,8 +96,4 @@ void ACustomProjectile::OnImpact(UPrimitiveComponent* HitComponent, AActor* Othe
 	Destroy();
 }
 
-void ACustomProjectile::OnRadialDamage()
-{
-	
-}
 

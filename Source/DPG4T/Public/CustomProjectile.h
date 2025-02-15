@@ -57,17 +57,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Target, Meta = (ExposeOnSpawn = true))
 	AActor* Target = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	float DamageRadius = 200.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	float DamageAmount = 10.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	float DamageInterval = 0.1f;
-
-	FTimerHandle DamageTimerHandle;
-
 
 
 protected:
@@ -92,6 +81,4 @@ public:
 		const FHitResult& Hit
 	);
 
-	UFUNCTION()
-	void OnRadialDamage();
 };
