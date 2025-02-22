@@ -461,7 +461,7 @@ void AMainCharacter::EndDash()
 
 	if (float remainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(DashRollbackHandle); remainingTime > 0.f || GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Falling)
 	{
-		GetWorldTimerManager().SetTimer(DashRollbackHandle, this, &AMainCharacter::DashRollbackEnded, DashRollback, true);
+		GetWorldTimerManager().SetTimer(DashRollbackHandle, this, &AMainCharacter::DashRollbackEnded, DashRollback, false);
 	}
 
 	GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
@@ -728,6 +728,9 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	{
 		ForceStartSlide();
 	}
+
+	GetWorldTimerManager().SetTimer(DashRollbackHandle, this, &AMainCharacter::DashRollbackEnded, DashRollback, false);
+	
 }
 
 void AMainCharacter::OnJumped_Implementation()
