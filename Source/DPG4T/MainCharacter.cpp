@@ -478,7 +478,7 @@ void AMainCharacter::DashCamUpdateTLCallback(float val)
 
 	UCameraComponent* camera = GetFirstPersonCameraComponent();
 
-	float NewCamFov = FMath::Lerp(90.f, 110.f, DashCamAlpha);
+	float NewCamFov = FMath::Lerp(90.f, 100.f, DashCamAlpha);
 	camera->SetFieldOfView(NewCamFov);
 }
 
