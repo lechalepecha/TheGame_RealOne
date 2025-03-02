@@ -152,7 +152,6 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	float SlideAlpha;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	UTimelineComponent* DashCamTL = nullptr;
 
@@ -429,6 +428,8 @@ protected:
 	float DashRollback{ 3.f };
 	int32 DashesLeft{ 2 };
 	int32 DashesMax{ 2 };
+
+	int32 CurrentMeleeAnim{ 0 };
 
 	void StartDash();
 	void EndDash();

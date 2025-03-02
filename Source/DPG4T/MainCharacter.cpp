@@ -19,6 +19,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TP_WeaponComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "MeleeAnimNotifyState.h"
 
 //#include "SightMeshComponent.h"
 #include "Public/FPAnimInstance.h"
@@ -273,6 +274,7 @@ void AMainCharacter::BeginPlay()
 
 void AMainCharacter::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 	StartSprint();
 
 	if (PhysicsHandle != nullptr)
@@ -285,6 +287,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle is null!"));
 		return;
 	}
+	
 	//UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
 
@@ -986,6 +989,8 @@ void AMainCharacter::AttachWeapon_Implementation(UTP_WeaponComponent* Weapon)
 	Weapon->SetIsEquippingFalse();
 	Weapon->IsEquipping = true;
 
+	CurrentMeleeAnim = 0;
+
 	// Attach the weapon to the First Person Character
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	Weapon->AttachToComponent(GetMesh1P(), AttachmentRules, FName(TEXT("ik_hand_gun")));
@@ -1245,14 +1250,57 @@ void AMainCharacter::PressedFire()
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle.Invalidate();
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->RecoilStart();
 
+
 	if (ADSing)
 	{
-		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireADSAnimation, 1.25f);
+		if (IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
+		{
+
+		}
+		else {
+			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireADSAnimation, 1.25f);
+
+		}
+		
 
 	}
 	else
 	{
-		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireAnimation, 1.25f);
+		if (IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
+		{
+
+			switch (CurrentMeleeAnim)
+			{
+				case 0:
+					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationFirst, 1.3f);
+					UE_LOG(LogTemp, Error, TEXT("First melee atack"));
+					break;
+				case 1:
+					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationSecond, 1.3f);
+					UE_LOG(LogTemp, Error, TEXT("Second melee atack"));
+					break;
+				case 2:
+					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationThird, 1.3f);
+					UE_LOG(LogTemp, Error, TEXT("Third melee atack"));
+					break;
+				case 3:
+					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationFinish, 1.3f);
+					UE_LOG(LogTemp, Error, TEXT("Finish melee atack"));
+					break;
+				default:
+					break;
+			}
+
+			CurrentMeleeAnim++;
+			if (CurrentMeleeAnim > 3)
+			{
+				CurrentMeleeAnim = 2;
+			}
+			
+		}
+		else {
+			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPFireAnimation, 1.25f);
+		}
 	}
 
 	switch (IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireMode)

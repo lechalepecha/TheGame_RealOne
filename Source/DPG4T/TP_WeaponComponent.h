@@ -88,6 +88,18 @@ public:
 	UAnimMontage* FPFireADSAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FPSlashAnimationFirst;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FPSlashAnimationSecond;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FPSlashAnimationThird;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FPSlashAnimationFinish;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FPMoveAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -269,8 +281,13 @@ public:
 	void RecoilStart();
 	void RecoilStop();
 	void RecoveryStart();
+	int CurrentMeleeAnim = 0;
 	FRotator Del;
 	void StopRecoveryTimerFunction();
+
+	TArray<FVector> MeleeTracePrevious;
+	TArray<FVector> MeleeTraceCurrent;
+	bool bMeleeBlocked;
 
 	UPROPERTY(BlueprintReadWrite)
 	float RecoilToStableTime = 10.0f;

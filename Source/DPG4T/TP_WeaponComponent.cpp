@@ -376,111 +376,180 @@ void UTP_WeaponComponent::Fire()
 		return;
 	}
 
-	// Try and fire a projectile
-	if (IsProjectileWeapon)
+	if (IsMeleeWeapon)
 	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
+		
+
+		FCollisionQueryParams TraceParams = FCollisionQueryParams();
+
+
+		TArray<FVector> MeleeTrace;
+		TArray<FHitResult> TraceResult;
+		FVector MeleeTraceBottom = GetSocketLocation("Blade_Bottom");
+		FVector MeleeTraceTop = GetSocketLocation("Blade_Tip");
+		FVector MeleeVectorDirection = MeleeTraceTop - MeleeTraceBottom;
+		float MeleeVectorLenght = MeleeVectorDirection.Size();
+
+		MeleeVectorDirection.Normalize();
+
+		MeleeTracePrevious.Push(MeleeTraceBottom);
+		MeleeTracePrevious.Push(MeleeTraceTop);
+		
+		MeleeTrace.Push(MeleeTraceBottom);
+		MeleeTrace.Push(MeleeTraceTop);
+
+		for (int i = 0; i < MeleeVectorLenght; i++)
 		{
+			if (i % 2 == 0)
+			{
+				MeleeTracePrevious.Push(MeleeTraceBottom + MeleeVectorDirection * i);
+				MeleeTrace.Push(MeleeTraceBottom + MeleeVectorDirection * i);
+			}
+			
+
+		}
+		if (MeleeTrace.Num() > 0) {
+			for (int i = 0; i < MeleeTrace.Num(); i++) {
+
+				GetWorld()->LineTraceMultiByObjectType(
+					TraceResult,
+					MeleeTracePrevious[i],
+					MeleeTrace[i],
+					ECollisionChannel::ECC_GameTraceChannel2,
+					TraceParams
+				);
+
+				MeleeTracePrevious[i] = MeleeTrace[i];
+
+				if (FHitResult::GetFirstBlockingHit(TraceResult)) {
+					TraceResult.Empty();
+					MeleeTracePrevious.Empty();
+					bMeleeBlocked = true;
+					break;
+				}
+
+				DrawDebugLine(
+					GetWorld(),
+					MeleeTracePrevious[i],
+					MeleeTrace[i],
+					FColor::Red,
+					false,
+					10.f,
+					0,
+					1.0f
+				);
+			}
+		}
+		
+	}
+	else
+	{
+		// Try and fire a projectile
+		if (IsProjectileWeapon)
+		{
+			UWorld* const World = GetWorld();
+			if (World != nullptr)
+			{
+				FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
+				FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
+				float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
+				FHitResult MuzzleTraceResult;
+
+				FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (1 / PelletSpread));
+				FVector ResultingVector = RandomDirection * Range;
+				FVector EndVector = StartVector + ResultingVector;
+
+				FHitResult WielderTraceResult{};
+				FCollisionQueryParams Params = FCollisionQueryParams();
+				Params.AddIgnoredActor(GetOwner());
+				Params.AddIgnoredActor(WeaponWielder);
+				bool isHit = GetWorld()->LineTraceSingleByChannel(
+					WielderTraceResult,
+					StartVector,
+					EndVector,
+					ECollisionChannel::ECC_GameTraceChannel2,
+					Params
+				);
+
+				// Trace from weapon muzzle to center trace hit location
+
+				FVector EndTrace{};
+				if (isHit)
+				{
+					FVector ScaledDirection = RandomDirection * 10.f;
+					EndTrace = WielderTraceResult.Location + ScaledDirection;
+				}
+				else
+				{
+					EndTrace = WielderTraceResult.TraceEnd;
+				}
+
+				Params.bReturnPhysicalMaterial = true;
+				GetWorld()->LineTraceSingleByChannel(
+					MuzzleTraceResult,
+					GetSocketLocation(MuzzleSocketName),
+					EndTrace,
+					ECollisionChannel::ECC_GameTraceChannel2,
+					Params
+				);
+
+				CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
+				OnWeaponProjectileFireDelegate.Broadcast(MuzzleTraceResult); // projectile is spawned in bp
+			}
+		}
+		else // hitscan weapon
+		{
+			// Trace from center screen to max weapon range
 			FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
 			FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
 			float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
-			FHitResult MuzzleTraceResult;
-
-			FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (1 / PelletSpread));
-			FVector ResultingVector = RandomDirection * Range;
-			FVector EndVector = StartVector + ResultingVector;
-
-			FHitResult WielderTraceResult{};
-			FCollisionQueryParams Params = FCollisionQueryParams();
-			Params.AddIgnoredActor(GetOwner());
-			Params.AddIgnoredActor(WeaponWielder);
-			bool isHit = GetWorld()->LineTraceSingleByChannel(
-				WielderTraceResult,
-				StartVector,
-				EndVector,
-				ECollisionChannel::ECC_GameTraceChannel2,
-				Params
-			);
-
-			// Trace from weapon muzzle to center trace hit location
-
-			FVector EndTrace{};
-			if (isHit)
+			TArray<FHitResult> MuzzleTraceResults;
+			for (int32 i = 0; i < Pellets; i++) // bruh idk if this is a good idea, but whatever man
 			{
-				FVector ScaledDirection = RandomDirection * 10.f;
-				EndTrace = WielderTraceResult.Location + ScaledDirection;
-			}
-			else
-			{
-				EndTrace = WielderTraceResult.TraceEnd;
-			}
+				FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (i / PelletSpread));
+				FVector ResultingVector = RandomDirection * Range;
+				FVector EndVector = StartVector + ResultingVector;
 
-			Params.bReturnPhysicalMaterial = true;
-			GetWorld()->LineTraceSingleByChannel(
-				MuzzleTraceResult,
-				GetSocketLocation(MuzzleSocketName),
-				EndTrace,
-				ECollisionChannel::ECC_GameTraceChannel2,
-				Params
-			);
+				FHitResult WielderTraceResult{};
+				FCollisionQueryParams Params = FCollisionQueryParams();
+				Params.AddIgnoredActor(GetOwner());
+				Params.AddIgnoredActor(WeaponWielder);
+				bool isHit = GetWorld()->LineTraceSingleByChannel(
+					WielderTraceResult,
+					StartVector,
+					EndVector,
+					ECollisionChannel::ECC_GameTraceChannel2,
+					Params
+				);
 
+				// Trace from weapon muzzle to center trace hit location
+
+				FVector EndTrace{};
+				if (isHit)
+				{
+					FVector ScaledDirection = RandomDirection * 10.f;
+					EndTrace = WielderTraceResult.Location + ScaledDirection;
+				}
+				else
+				{
+					EndTrace = WielderTraceResult.TraceEnd;
+				}
+
+				Params.bReturnPhysicalMaterial = true;
+				FHitResult MuzzleTraceResult{};
+				GetWorld()->LineTraceSingleByChannel(
+					MuzzleTraceResult,
+					GetSocketLocation(MuzzleSocketName),
+					EndTrace,
+					ECollisionChannel::ECC_GameTraceChannel2,
+					Params
+				);
+				MuzzleTraceResults.Add(MuzzleTraceResult);
+
+			}
 			CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
-			OnWeaponProjectileFireDelegate.Broadcast(MuzzleTraceResult); // projectile is spawned in bp
+			OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
 		}
-	}
-	else // hitscan weapon
-	{
-		// Trace from center screen to max weapon range
-		FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
-		FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
-		float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
-		TArray<FHitResult> MuzzleTraceResults;
-		for (int32 i = 0; i < Pellets; i++) // bruh idk if this is a good idea, but whatever man
-		{
-			FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (i / PelletSpread));
-			FVector ResultingVector = RandomDirection * Range;
-			FVector EndVector = StartVector + ResultingVector;
-
-			FHitResult WielderTraceResult{};
-			FCollisionQueryParams Params = FCollisionQueryParams();
-			Params.AddIgnoredActor(GetOwner());
-			Params.AddIgnoredActor(WeaponWielder);
-			bool isHit = GetWorld()->LineTraceSingleByChannel(
-				WielderTraceResult,
-				StartVector,
-				EndVector,
-				ECollisionChannel::ECC_GameTraceChannel2,
-				Params
-			);
-
-			// Trace from weapon muzzle to center trace hit location
-
-			FVector EndTrace{};
-			if (isHit)
-			{
-				FVector ScaledDirection = RandomDirection * 10.f;
-				EndTrace = WielderTraceResult.Location + ScaledDirection;
-			}
-			else
-			{
-				EndTrace = WielderTraceResult.TraceEnd;
-			}
-
-			Params.bReturnPhysicalMaterial = true;
-			FHitResult MuzzleTraceResult{};
-			GetWorld()->LineTraceSingleByChannel(
-				MuzzleTraceResult,
-				GetSocketLocation(MuzzleSocketName),
-				EndTrace,
-				ECollisionChannel::ECC_GameTraceChannel2,
-				Params
-			);
-			MuzzleTraceResults.Add(MuzzleTraceResult);
-
-		}
-		CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
-		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
 	}
 
 	// Try and play a firing animation for the weapon mesh if specified
