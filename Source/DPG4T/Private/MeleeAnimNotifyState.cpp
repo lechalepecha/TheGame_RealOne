@@ -16,7 +16,7 @@ void UMeleeAnimNotifyState::BranchingPointNotifyTick(FBranchingPointNotifyPayloa
 	AMainCharacter* MeleeChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(BranchingPointPayload.SkelMeshComponent->GetWorld(), 0));
 
 	if (MeleeChar && !MeleeChar->CurrentWeapon->bMeleeBlocked) {
-		MeleeChar->PressedFire();
+		MeleeChar->CallMelleTraceDraw();
 		NotifyTick(BranchingPointPayload.SkelMeshComponent, BranchingPointPayload.SequenceAsset, FrameDeltaTime);
 	}
 	else {

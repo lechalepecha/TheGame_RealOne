@@ -248,6 +248,8 @@ public:
 	void PressedFire();
 	void ReleasedFire();
 
+	void CallMelleTraceDraw();
+
 	void PressedReload();
 
 	void PressedSwitchFireMode();

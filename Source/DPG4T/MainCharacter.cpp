@@ -1269,27 +1269,7 @@ void AMainCharacter::PressedFire()
 		if (IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
 		{
 
-			switch (CurrentMeleeAnim)
-			{
-				case 0:
-					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationFirst, 1.3f);
-					UE_LOG(LogTemp, Error, TEXT("First melee atack"));
-					break;
-				case 1:
-					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationSecond, 1.3f);
-					UE_LOG(LogTemp, Error, TEXT("Second melee atack"));
-					break;
-				case 2:
-					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationThird, 1.3f);
-					UE_LOG(LogTemp, Error, TEXT("Third melee atack"));
-					break;
-				case 3:
-					GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimationFinish, 1.3f);
-					UE_LOG(LogTemp, Error, TEXT("Finish melee atack"));
-					break;
-				default:
-					break;
-			}
+			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPSlashAnimations[CurrentMeleeAnim], 1.3f);
 
 			CurrentMeleeAnim++;
 			if (CurrentMeleeAnim > 3)
@@ -1325,6 +1305,11 @@ void AMainCharacter::PressedFire()
 void AMainCharacter::ReleasedFire()
 {
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsWielderHoldingShootButton = false;
+}
+
+void AMainCharacter::CallMelleTraceDraw()
+{
+	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->DrawMeleeTrace();
 }
 
 void AMainCharacter::PressedReload()

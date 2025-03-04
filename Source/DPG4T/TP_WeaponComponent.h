@@ -88,16 +88,7 @@ public:
 	UAnimMontage* FPFireADSAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPSlashAnimationFirst;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPSlashAnimationSecond;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPSlashAnimationThird;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPSlashAnimationFinish;
+	TArray<UAnimMontage*> FPSlashAnimations;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FPMoveAnimation = nullptr;
@@ -188,6 +179,10 @@ public:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Fire();
+
+	/** Make the weapon Fire a Projectile */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void DrawMeleeTrace();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void RicochetFire();
