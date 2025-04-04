@@ -117,7 +117,7 @@ AMainCharacter::AMainCharacter()
 	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.15f, 1.f);
 	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.25f, 0.f);
+	KeyHandle = DashCamAlphaCurve->FloatCurve.AddKey(0.3f, 0.f);
 	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	DashCamTL->AddInterpFloat(DashCamAlphaCurve, onDashCamTLCallback);
 
@@ -345,6 +345,24 @@ void AMainCharacter::CrouchTLCallback(float val)
 {
 	CrouchAlpha = val;
 
+	if (CurrentWeapon != nullptr)
+	{
+
+		if (val < CrouchAlphaPrev)
+		{
+			// Возвращаем исходный разброс
+			CurrentWeapon->MaxSpread = FMath::Lerp(CurrentWeapon->MinSpread, WeaponSpread, 1.0f - val);
+		}
+		// Если приседаем
+		else
+		{
+			// Уменьшаем разброс
+			CurrentWeapon->MaxSpread = FMath::Lerp(CurrentWeapon->MaxSpread, CurrentWeapon->MinSpread, val);
+		}
+	}
+
+	CrouchAlphaPrev = val;
+
 	switch (MoveMode)
 	{
 	case ECustomMovementMode::Walking:
@@ -429,7 +447,7 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
 		GetCharacterMovement()->BrakingDecelerationFalling = 93000.f;
 
-		//GetController()->SetIgnoreMoveInput(true);
+		GetController()->SetIgnoreMoveInput(true);
 
 		LastVelocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0.f);
 
@@ -452,7 +470,7 @@ void AMainCharacter::EndDash()
 	GetCharacterMovement()->GravityScale = 1.5f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 200.f;
 
-	//GetController()->SetIgnoreMoveInput(false);
+	GetController()->SetIgnoreMoveInput(false);
 	GetCharacterMovement()->Velocity = LastVelocity;
 
 	if (DashesLeft != 0)
@@ -460,7 +478,6 @@ void AMainCharacter::EndDash()
 		GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
 		CoyoteTimerHandle.Invalidate();
 	}
-
 
 	if (float remainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(DashRollbackHandle); remainingTime > 0.f || GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Falling)
 	{
@@ -497,6 +514,11 @@ void AMainCharacter::DashRollbackEnded()
 void AMainCharacter::CustomCrouch()
 {
 	CrouchKeyHeld = true;
+	if (CurrentWeapon != nullptr)
+	{
+		WeaponSpread = CurrentWeapon->MaxSpread;
+	}
+	
 	switch (MoveMode)
 	{
 	case ECustomMovementMode::Walking:
@@ -581,7 +603,6 @@ void AMainCharacter::OnCheckCanStand()
 void AMainCharacter::StandUp()
 {
 	MoveMode = ECustomMovementMode::Walking;
-
 	// sequence 1
 	CrouchTL->Reverse();
 
@@ -1381,7 +1402,7 @@ int32 AMainCharacter::GetRemainingAmmo_Implementation()
 	switch (ammoType)
 	{
 	case EAmmoType::Primary:
-		return 999;
+		return PrimaryAmmoRemaining;
 		break;
 	case EAmmoType::Special:
 		return SpecialAmmoRemaining;
@@ -1400,7 +1421,8 @@ int32 AMainCharacter::SetRemainingAmmo_Implementation(int32 NewValue)
 	switch (ammoType)
 	{
 	case EAmmoType::Primary:
-		return 999;
+		PrimaryAmmoRemaining = NewValue;
+		return PrimaryAmmoRemaining;
 		break;
 	case EAmmoType::Special:
 		SpecialAmmoRemaining = NewValue;

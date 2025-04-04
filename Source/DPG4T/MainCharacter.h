@@ -411,6 +411,7 @@ protected:
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	float CrouchAlpha;
+	float CrouchAlphaPrev;
 	float StandHeight{ 96.f };
 	float CrouchHeight{ 55.f };
 	bool CrouchKeyHeld;
@@ -554,10 +555,11 @@ private:
 	int32 JumpsMax{ 2 };
 	UFPAnimInstance* FPAnimInstance = nullptr;
 
+	int32 PrimaryAmmoRemaining = 180;
 	int32 SpecialAmmoRemaining = 300;
 	int32 HeavyAmmoRemaining = 20;
 
-
+	float WeaponSpread;
 
 public:
 	FVector GetLocationLagPos() { return LocationLagPos; }

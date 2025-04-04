@@ -384,7 +384,8 @@ void UTP_WeaponComponent::Fire()
 		{
 			FVector StartVector = IWeaponWielderInterface::Execute_GetTraceStart(WeaponWielder);
 			FVector ForwardVector = IWeaponWielderInterface::Execute_GetTraceForward(WeaponWielder);
-			float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
+			//float spread = UKismetMathLibrary::MapRangeClamped(ADSAlpha, 0.f, 1.f, MaxSpread, MinSpread);
+			float spread = FMath::Lerp(MaxSpread, MinSpread, ADSAlpha);
 			FHitResult MuzzleTraceResult;
 
 			FVector RandomDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ForwardVector, spread + (1 / PelletSpread));
