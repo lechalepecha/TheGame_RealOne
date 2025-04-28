@@ -88,6 +88,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	class UInputAction* DashAction = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InteractAction = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MagnetAction = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -214,6 +217,13 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Ammo)
+	int32 PrimaryAmmoRemaining = 180;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Ammo)
+	int32 SpecialAmmoRemaining = 300;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Ammo)
+	int32 HeavyAmmoRemaining = 20;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -554,10 +564,6 @@ private:
 	int32 JumpsLeft{ 2 };
 	int32 JumpsMax{ 2 };
 	UFPAnimInstance* FPAnimInstance = nullptr;
-
-	int32 PrimaryAmmoRemaining = 180;
-	int32 SpecialAmmoRemaining = 300;
-	int32 HeavyAmmoRemaining = 20;
 
 	float WeaponSpread;
 

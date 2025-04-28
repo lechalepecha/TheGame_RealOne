@@ -319,6 +319,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		// dash
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMainCharacter::StartDash);
 
+		//EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMainCharacter::StartDash);
+
 		// arm input
 		EnhancedInputComponent->BindAction(MagnetAction, ETriggerEvent::Started, this, &AMainCharacter::CheckGrabObject);
 		EnhancedInputComponent->BindAction(QuickMeleeAction, ETriggerEvent::Started, this, &AMainCharacter::PressedQuickMelee);
