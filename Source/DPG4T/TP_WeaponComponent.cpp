@@ -454,7 +454,7 @@ void UTP_WeaponComponent::Fire()
 				ECollisionChannel::ECC_GameTraceChannel2,
 				Params
 			);
-
+			
 			// Trace from weapon muzzle to center trace hit location
 
 			FVector EndTrace{};
