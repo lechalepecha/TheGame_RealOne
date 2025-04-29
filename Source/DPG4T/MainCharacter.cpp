@@ -461,6 +461,8 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->Velocity = FVector(DashDirection.X, DashDirection.Y, 0);
 
 		DashCamTL->PlayFromStart();
+
+		isDashing = true;
 	}
 }
 
@@ -491,7 +493,7 @@ void AMainCharacter::EndDash()
 	GetWorld()->GetTimerManager().ClearTimer(DashTime);
 	DashTime.Invalidate();
 	Dip(1.8f, 0.6f);
-
+	isDashing = false;
 }
 
 void AMainCharacter::DashCamUpdateTLCallback(float val)
@@ -1333,6 +1335,12 @@ void AMainCharacter::ReleasedFire()
 void AMainCharacter::CallMelleTraceDraw()
 {
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->DrawMeleeTrace();
+}
+
+void AMainCharacter::CallMelleTraceEnd()
+{
+	
+	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->DrawMeleeEnd();
 }
 
 void AMainCharacter::PressedReload()

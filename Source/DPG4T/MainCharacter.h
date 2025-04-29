@@ -165,6 +165,8 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void DashCamUpdateTLCallback(float val);
 
 	float DashCamAlpha;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	bool isDashing = false;
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void FinishedSlideDelegate();
@@ -259,6 +261,8 @@ public:
 	void ReleasedFire();
 
 	void CallMelleTraceDraw();
+	void CallMelleTraceEnd();
+
 
 	void PressedReload();
 

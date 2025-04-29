@@ -183,6 +183,10 @@ public:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DrawMeleeTrace();
+	void DrawMeleeEnd();
+
+	TArray<FHitResult> MeleeTraceResult;
+
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void RicochetFire();
@@ -193,6 +197,9 @@ public:
 	// weapon fire effect (Shell eject, muzzle flash, tracer) implemented in blueprint but called from cpp (Fire() function)
 	UPROPERTY(BlueprintAssignable)
 	FOnWeaponHitScanFireSignature OnWeaponHitScanFireDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnWeaponHitScanFireSignature OnMeleeWeaponHitScanDelegate;
 
 	// weapon projectile fire effect (no hit result passed)
 	UPROPERTY(BlueprintAssignable)
