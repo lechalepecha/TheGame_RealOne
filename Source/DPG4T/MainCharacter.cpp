@@ -455,7 +455,8 @@ void AMainCharacter::StartDash()
 
 		DashDirection.X = FMath::Clamp(DashDirection.X, -10000.f, 10000.f);
 		DashDirection.Y = FMath::Clamp(DashDirection.Y, -10000.f, 10000.f);
-
+	
+		
 		GetCharacterMovement()->Velocity = FVector(DashDirection.X, DashDirection.Y, 0);
 
 		DashCamTL->PlayFromStart();
