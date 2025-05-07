@@ -139,6 +139,8 @@ void UTP_WeaponComponent::RicochetFire()
 		return;
 	}
 
+	
+
 	if (CurrentMagazineCount <= 0)
 	{
 		StopFire();
@@ -208,8 +210,12 @@ void UTP_WeaponComponent::RicochetFire()
 
 		if (Reflections > 0)
 		{
+			float ricoshetFireDamageMoficator = 2;
+			float DamageTMP = Damage;
 			for (int j = 0; j < CurrentMagazineCount; j++)
 			{
+
+				
 				if (MuzzleTraceResult.bBlockingHit)
 				{
 					FVector UDirection = UKismetMathLibrary::GetDirectionUnitVector(MuzzleTraceResult.TraceStart, MuzzleTraceResult.TraceEnd);
@@ -222,15 +228,17 @@ void UTP_WeaponComponent::RicochetFire()
 
 					GetWorld()->LineTraceSingleByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel12, Params);
 					DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
-					MuzzleTraceResults.Add(MuzzleTraceResult);
+					
 				}
+				MuzzleTraceResults.Add(MuzzleTraceResult);
+				
 			}
 		}
-
+		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
 		DrawDebugLine(GetWorld(), GetSocketLocation(MuzzleSocketName), EndVector, FColor::Blue, false, 5.0f);
 	}
 	CurrentMagazineCount = 0;
-	OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
+	
 
 	// Try and play a firing animation for the weapon mesh if specified
 	if (WeaponMeshFireAnimation != nullptr)
@@ -545,7 +553,7 @@ void UTP_WeaponComponent::DrawMeleeTrace()
 				break;
 			}
 
-			DrawDebugLine(
+			/*DrawDebugLine(
 				GetWorld(),
 				MeleeTracePrevious[i],
 				MeleeTrace[i],
@@ -554,7 +562,7 @@ void UTP_WeaponComponent::DrawMeleeTrace()
 				10.f,
 				0,
 				1.0f
-			);
+			);*/
 			OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
 		}
 	}

@@ -466,6 +466,9 @@ void AMainCharacter::StartDash()
 		DashCamTL->PlayFromStart();
 
 		isDashing = true;
+
+		UGameplayStatics::PlaySoundAtLocation(this, SlideCue, GetActorLocation());
+		MakeNoise(1.f, this, GetActorLocation());
 	}
 }
 
@@ -756,6 +759,9 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	CoyoteTimerHandle.Invalidate();
 	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
 	SprintTimerHandle.Invalidate();
+
+	MakeNoise(1.f, this, GetActorLocation());
+
 
 	// sequence 2
 	if (CrouchKeyHeld && MoveMode == ECustomMovementMode::Sprinting)
