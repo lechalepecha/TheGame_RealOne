@@ -445,7 +445,8 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->GravityScale = 0.f;
 		GetCharacterMovement()->AirControl = 0;
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
-		GetCharacterMovement()->BrakingDecelerationFalling = 93000.f;
+		GetCharacterMovement()->GroundFriction = 6.f;
+		GetCharacterMovement()->FallingLateralFriction = 8.0f;
 
 		GetController()->SetIgnoreMoveInput(true);
 
@@ -471,7 +472,10 @@ void AMainCharacter::EndDash()
 
 	GetCharacterMovement()->AirControl = 0.275f;
 	GetCharacterMovement()->GravityScale = 1.5f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 200.f;
+	GetCharacterMovement()->GroundFriction = 8.f;
+
+	GetCharacterMovement()->BrakingFrictionFactor = 1.f;
+	GetCharacterMovement()->FallingLateralFriction = 0.f;
 
 	GetController()->SetIgnoreMoveInput(false);
 	GetCharacterMovement()->Velocity = LastVelocity;
@@ -486,8 +490,6 @@ void AMainCharacter::EndDash()
 	{
 		GetWorldTimerManager().SetTimer(DashRollbackHandle, this, &AMainCharacter::DashRollbackEnded, DashRollback, false);
 	}
-
-	GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
 
 	GetWorld()->GetTimerManager().ClearTimer(DashTime);
 	DashTime.Invalidate();
