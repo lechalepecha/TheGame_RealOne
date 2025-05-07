@@ -437,7 +437,7 @@ void AMainCharacter::StartSprint()
 
 void AMainCharacter::StartDash()
 {
-	if (DashesLeft != 0)
+	if (DashesLeft != 0 && !isDashing)
 	{
 		GetWorldTimerManager().SetTimer(DashTime, this, &AMainCharacter::EndDash, 0.25f, true);
 
