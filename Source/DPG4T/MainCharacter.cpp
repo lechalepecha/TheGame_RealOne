@@ -419,6 +419,9 @@ void AMainCharacter::StartSprint()
 			GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &AMainCharacter::OnSprintTimerEnd, 5.f, false);
 			UE_LOG(LogTemplateCharacter, Warning, TEXT("Character started moving, start Timer to start running"));
 			break;
+
+		case ECustomMovementMode::Crouching:
+			break;
 		default:
 			break;
 		}
@@ -445,7 +448,7 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->GravityScale = 0.f;
 		GetCharacterMovement()->AirControl = 0;
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
-		GetCharacterMovement()->GroundFriction = 6.f;
+		GetCharacterMovement()->GroundFriction = 7.f;
 		GetCharacterMovement()->FallingLateralFriction = 8.0f;
 
 		GetController()->SetIgnoreMoveInput(true);
@@ -751,6 +754,8 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	// On landing, clear coyote timer
 	GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
 	CoyoteTimerHandle.Invalidate();
+	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
+	SprintTimerHandle.Invalidate();
 
 	// sequence 2
 	if (CrouchKeyHeld && MoveMode == ECustomMovementMode::Sprinting)
@@ -776,6 +781,8 @@ void AMainCharacter::OnJumped_Implementation()
 		{
 			float normalizedSpeed = UKismetMathLibrary::NormalizeToRange(GetVelocity().Length(), 0.f, BaseWalkSpeed);
 			UGameplayStatics::PlaySoundAtLocation(this, JumpCue, GetActorLocation());
+			MakeNoise(1.f, this, GetActorLocation());
+
 		}
 	}
 
@@ -857,6 +864,10 @@ void AMainCharacter::WalkTLFootstepCallback()
 		float volumeMultiplier = FMath::Lerp(0.2f, 1.f, normalizedSpeed);
 		float pitchMultiplier = FMath::Lerp(0.8f, 1.f, normalizedSpeed);
 		UGameplayStatics::PlaySoundAtLocation(this, FootstepCue, GetActorLocation(), volumeMultiplier, pitchMultiplier);
+		if (MoveMode != ECustomMovementMode::Crouching)
+		{
+			MakeNoise(1.f, this, GetActorLocation());
+		}		
 	}
 
 	if (MoveMode == ECustomMovementMode::Sprinting)
