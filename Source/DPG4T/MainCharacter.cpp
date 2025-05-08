@@ -449,7 +449,7 @@ void AMainCharacter::StartDash()
 		GetCharacterMovement()->AirControl = 0;
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
 		GetCharacterMovement()->GroundFriction = 7.f;
-		GetCharacterMovement()->FallingLateralFriction = 8.0f;
+		GetCharacterMovement()->FallingLateralFriction = 9.0f;
 
 		GetController()->SetIgnoreMoveInput(true);
 
@@ -467,7 +467,7 @@ void AMainCharacter::StartDash()
 
 		isDashing = true;
 
-		UGameplayStatics::PlaySoundAtLocation(this, SlideCue, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, DashCue, GetActorLocation());
 		MakeNoise(1.f, this, GetActorLocation());
 	}
 }

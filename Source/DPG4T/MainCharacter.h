@@ -211,6 +211,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
 	USoundBase* SlideCue = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
+	USoundBase* DashCue = nullptr;
+
 public:
 	AMainCharacter();
 
