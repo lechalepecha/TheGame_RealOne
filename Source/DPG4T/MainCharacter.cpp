@@ -1392,11 +1392,15 @@ void AMainCharacter::PressedSwitchFireMode()
 
 void AMainCharacter::PressedADS()
 {
-	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
-	//UE_LOG(LogTemp, Error, TEXT("ADSed"));
+	if (!IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
+	{
+		IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
+		//UE_LOG(LogTemp, Error, TEXT("ADSed"));
 
-	ADSing = true;
-	EnterADS();
+		ADSing = true;
+		EnterADS();
+	}
+	
 }
 
 void AMainCharacter::EnterADS()

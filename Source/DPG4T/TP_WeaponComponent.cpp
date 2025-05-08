@@ -219,14 +219,15 @@ void UTP_WeaponComponent::RicochetFire()
 			Params
 		);
 		MuzzleTraceResults.Add(MuzzleTraceResult);
+		float ricoshetFireDamageMoficator = 1.75;
+		float DamageTMP = Damage;
+		Damage *= ricoshetFireDamageMoficator;
 
 		if (Reflections > 0)
 		{
-			float ricoshetFireDamageMoficator = 2;
-			float DamageTMP = Damage;
+			
 			for (int j = 0; j < CurrentMagazineCount; j++)
 			{
-
 				
 				if (MuzzleTraceResult.bBlockingHit)
 				{
@@ -239,7 +240,7 @@ void UTP_WeaponComponent::RicochetFire()
 					FVector End = MuzzleTraceResult.ImpactPoint + ScaledDiretcion;
 
 					GetWorld()->LineTraceSingleByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel12, Params);
-					DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
+					//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
 					
 				}
 				MuzzleTraceResults.Add(MuzzleTraceResult);
@@ -247,7 +248,8 @@ void UTP_WeaponComponent::RicochetFire()
 			}
 		}
 		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
-		DrawDebugLine(GetWorld(), GetSocketLocation(MuzzleSocketName), EndVector, FColor::Blue, false, 5.0f);
+		Damage = DamageTMP;
+		//DrawDebugLine(GetWorld(), GetSocketLocation(MuzzleSocketName), EndVector, FColor::Blue, false, 5.0f);
 	}
 	CurrentMagazineCount = 0;
 	
@@ -261,7 +263,7 @@ void UTP_WeaponComponent::RicochetFire()
 	}
 
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
-
+	
 	UE_LOG(LogTemp, Error, TEXT("Fired Alternate fire mode for PRIMARY ammo type weapon RICOCHET"));
 
 }
