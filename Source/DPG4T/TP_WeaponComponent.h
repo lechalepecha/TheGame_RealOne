@@ -146,6 +146,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EFireMode FireMode{ EFireMode::Single };
 
+	EFireMode PrevFireMode{ };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ADS)
 	UMaterialParameterCollection* MPC_FP = nullptr;
 	UMaterialParameterCollectionInstance* MPC_FP_Instance = nullptr;

@@ -73,12 +73,24 @@ void UTP_WeaponComponent::SwitchFireMode()
 	{
 	case EFireMode::Single:
 		FireMode = EFireMode::Alternate;
+		PrevFireMode = EFireMode::Single;
 		break;
 	case EFireMode::Alternate:
-		FireMode = EFireMode::Auto;
+		switch (PrevFireMode)
+		{
+		case EFireMode::Single:
+			FireMode = EFireMode::Single;
+			break;
+		case EFireMode::Auto:
+			FireMode = EFireMode::Auto;
+			break;
+		default:
+			break;
+		}
 		break;
 	case EFireMode::Auto:
-		FireMode = EFireMode::Single;
+		FireMode = EFireMode::Alternate;
+		PrevFireMode = EFireMode::Auto;
 		break;
 	default:
 		break;
