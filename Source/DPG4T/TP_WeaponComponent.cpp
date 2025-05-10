@@ -500,7 +500,6 @@ void UTP_WeaponComponent::Fire()
 				Params
 			);
 			MuzzleTraceResults.Add(MuzzleTraceResult);
-
 		}
 		CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
 		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
@@ -518,14 +517,66 @@ void UTP_WeaponComponent::Fire()
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
 }
 
-void UTP_WeaponComponent::DrawMeleeTrace()
+void UTP_WeaponComponent::DrawMelee()
+{
+	TArray<FHitResult> MeleeTraceResults;
+
+	FHitResult WielderTraceResult{};
+	FCollisionQueryParams Params = FCollisionQueryParams();
+	Params.AddIgnoredActor(GetOwner());
+	Params.AddIgnoredActor(WeaponWielder);
+	Params.bReturnPhysicalMaterial = true;
+
+	FVector MeleeTraceBottom = GetSocketLocation("Blade_Bottom");
+	FVector MeleeTraceTop = GetSocketLocation("Blade_Tip");
+	float SphereRadius = 5.f;
+
+	FVector Direction = (MeleeTraceBottom - MeleeTraceTop).GetSafeNormal();
+	FRotator Rotation = FRotationMatrix::MakeFromZ(Direction).Rotator();
+	FQuat Quat = Rotation.Quaternion();
+
+	FCollisionShape Capsule{ FCollisionShape::MakeCapsule(SphereRadius, FVector::Distance(MeleeTraceBottom, MeleeTraceTop)*0.5f)};
+
+	FHitResult meleeHitResult{};
+	GetWorld()->SweepSingleByChannel(
+		meleeHitResult,
+		MeleeTraceBottom,
+		MeleeTraceTop,
+		Quat,
+		ECollisionChannel::ECC_GameTraceChannel2,
+		Capsule,
+		Params
+	);
+	
+	MeleeTraceResults.Add(meleeHitResult);
+
+	/*DrawDebugCapsule
+	(
+		GetWorld(),
+		(MeleeTraceTop + MeleeTraceBottom)*0.5f,
+		FVector::Distance(MeleeTraceTop, MeleeTraceBottom)*0.5f,
+		SphereRadius,
+		Quat,
+		FColor::Cyan,
+		false,
+		50.f
+	);*/
+	if(meleeHitResult.bBlockingHit)
+		UE_LOG(LogTemp, Error, TEXT("Melee weapon hit blocking"));
+	OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResults);
+}
+
+/*void UTP_WeaponComponent::DrawMeleeTrace()
 {
 	FCollisionQueryParams TraceParams = FCollisionQueryParams();
+	TraceParams.AddIgnoredActor(GetOwner());
+	TraceParams.AddIgnoredActor(WeaponWielder);
 
 
 	TArray<FVector> MeleeTrace;
 	FVector MeleeTraceBottom = GetSocketLocation("Blade_Bottom");
 	FVector MeleeTraceTop = GetSocketLocation("Blade_Tip");
+	float sphereRadius = 5.f;
 	FVector MeleeVectorDirection = MeleeTraceTop - MeleeTraceBottom;
 	float MeleeVectorLenght = MeleeVectorDirection.Size();
 
@@ -536,6 +587,8 @@ void UTP_WeaponComponent::DrawMeleeTrace()
 
 	MeleeTrace.Push(MeleeTraceBottom);
 	MeleeTrace.Push(MeleeTraceTop);
+	
+
 
 	for (int i = 0; i < MeleeVectorLenght; i++)
 	{
@@ -559,15 +612,17 @@ void UTP_WeaponComponent::DrawMeleeTrace()
 			);
 
 			MeleeTracePrevious[i] = MeleeTrace[i];
-
+			OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
 			if (FHitResult::GetFirstBlockingHit(MeleeTraceResult)) {
 				MeleeTraceResult.Empty();
 				MeleeTracePrevious.Empty();
 				bMeleeBlocked = true;
+				UE_LOG(LogTemp, Error, TEXT("Melee weapon hit blocking"));
+
 				break;
 			}
 
-			/*DrawDebugLine(
+			DrawDebugLine(
 				GetWorld(),
 				MeleeTracePrevious[i],
 				MeleeTrace[i],
@@ -576,24 +631,20 @@ void UTP_WeaponComponent::DrawMeleeTrace()
 				10.f,
 				0,
 				1.0f
-			);*/
-			OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
+			);
+			
 		}
+		
 	}
 	
 	
 }
-
+*/
 void UTP_WeaponComponent::DrawMeleeEnd()
 {
 	UE_LOG(LogTemp, Error, TEXT("Player was meleeing"));
-	if(!MeleeTraceResult.IsEmpty())
-	{
-		
-	}
 	OnMeleeWeaponHitScanDelegate.Broadcast(MeleeTraceResult);
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
-	
 }
 
 void UTP_WeaponComponent::StopFire()

@@ -1319,6 +1319,8 @@ void AMainCharacter::PressedFire()
 			{
 				CurrentMeleeAnim = 2;
 			}
+			GetWorldTimerManager().SetTimer(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireRateDelayTimerHandle, IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->FireDelay, false);
+			return;
 			
 		}
 		else {
@@ -1352,7 +1354,7 @@ void AMainCharacter::ReleasedFire()
 
 void AMainCharacter::CallMelleTraceDraw()
 {
-	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->DrawMeleeTrace();
+	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->DrawMelee();
 }
 
 void AMainCharacter::CallMelleTraceEnd()
