@@ -184,7 +184,6 @@ public:
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	//void DrawMeleeTrace();
 	void DrawMelee();
 	void DrawMeleeEnd();
 
