@@ -416,6 +416,9 @@ private:
 
 	FTimerHandle ReloadDelayTimerHandle;
 
+	bool ContainsHitResultActor(const TArray<FHitResult>& HitResult, const FHitResult& TargetHit);
+
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EAmmoType AmmoType{ EAmmoType::Primary };

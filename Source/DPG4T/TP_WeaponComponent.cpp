@@ -544,9 +544,14 @@ void UTP_WeaponComponent::DrawMelee()
 		Capsule,
 		Params
 	);
-	MeleeTraceResult.Add(meleeHitResult);
+	if (!ContainsHitResultActor(MeleeTraceResult, meleeHitResult))
+	{
+		MeleeTraceResult.Add(meleeHitResult);
+		OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
 
-	OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
+	}
+
+
 	/*DrawDebugCapsule
 	(
 		GetWorld(),
@@ -565,6 +570,7 @@ void UTP_WeaponComponent::DrawMeleeEnd()
 {
 	if(MeleeTraceResult.IsEmpty())
 		UE_LOG(LogTemp, Error, TEXT("MeleeTraceResult is Empty!!!!!!!!!!!!!!"));
+
 	OnMeleeWeaponHitScanDelegate.Broadcast(MeleeTraceResult);
 	
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
@@ -813,4 +819,18 @@ void UTP_WeaponComponent::SetIsReloadingFalse()
 	// Ensure the timer is cleared by using the timer handle
 	GetWorld()->GetTimerManager().ClearTimer(ReloadDelayTimerHandle);
 	ReloadDelayTimerHandle.Invalidate();
+}
+
+bool UTP_WeaponComponent::ContainsHitResultActor(const TArray<FHitResult>& HitResults, const FHitResult& TargetHit)
+{
+	for (const FHitResult& Hit : HitResults)
+	{
+		// Сравниваем ключевые поля (можно добавить другие, если нужно)
+		if (Hit.GetComponent() == TargetHit.GetComponent() ||
+			Hit.GetActor() == TargetHit.GetActor()) // Допуск для сравнения float
+		{
+			return true;
+		}
+	}
+	return false;
 }
