@@ -443,6 +443,8 @@ void AMainCharacter::StartDash()
 	if (DashesLeft != 0 && !isDashing)
 	{
 		GetWorldTimerManager().SetTimer(DashTime, this, &AMainCharacter::EndDash, 0.25f, true);
+		
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 		FVector CurrentVelocity = GetCharacterMovement()->Velocity;
 		GetCharacterMovement()->GravityScale = 0.f;
@@ -475,6 +477,8 @@ void AMainCharacter::StartDash()
 void AMainCharacter::EndDash()
 {
 	DashesLeft--;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 	GetCharacterMovement()->AirControl = 0.275f;
 	GetCharacterMovement()->GravityScale = 1.5f;
@@ -517,6 +521,7 @@ void AMainCharacter::DashCamUpdateTLCallback(float val)
 void AMainCharacter::DashRollbackEnded()
 {
 	DashesLeft = DashesMax;
+
 
 	GetWorld()->GetTimerManager().ClearTimer(DashRollbackHandle);
 	DashRollbackHandle.Invalidate();
