@@ -217,7 +217,7 @@ void UTP_WeaponComponent::RicochetFire()
 			EndTrace,
 			ECollisionChannel::ECC_GameTraceChannel2,
 			Params
-		);
+			);
 		MuzzleTraceResults.Add(MuzzleTraceResult);
 		float ricoshetFireDamageMoficator = 1.75;
 		float DamageTMP = Damage;

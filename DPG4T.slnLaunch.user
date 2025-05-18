@@ -1,0 +1,19 @@
+[
+  {
+    "Name": "Новый профиль",
+    "Projects": [
+      {
+        "Path": "Intermediate\\ProjectFiles\\UE5.vcxproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Intermediate\\ProjectFiles\\DPG4T.vcxproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Intermediate\\Build\\BuildRulesProjects\\DPG4TModuleRules\\DPG4TModuleRules.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
