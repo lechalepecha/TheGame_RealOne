@@ -12,6 +12,7 @@ enum class EFireMode : uint8
 {
     Single,
     Alternate,
+    Burst,
     Auto,
 
 };

@@ -104,7 +104,7 @@ void UTP_WeaponComponent::SingleFire()
 	StopFire();
 }
 
-/*void UTP_WeaponComponent::BurstFire()
+void UTP_WeaponComponent::BurstFire()
 {
 	Fire();
 	BurstFireCurrent++;
@@ -118,7 +118,7 @@ void UTP_WeaponComponent::SingleFire()
 		BurstFireCurrent = 0;
 		StopFire();
 	}
-}*/
+}
 
 void UTP_WeaponComponent::AlternateFire()
 {

@@ -395,6 +395,9 @@ public:
 	void AlternateFire();
 
 	UFUNCTION(BlueprintCallable)
+	void BurstFire();
+
+	UFUNCTION(BlueprintCallable)
 	void FullAutoFire();
 
 	UFUNCTION(BlueprintCallable)
