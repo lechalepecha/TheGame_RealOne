@@ -445,7 +445,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay, meta = (AllowPrivateAccess = "true"))
 	float DashStrenght{ 20.f };
-	float DashRollback{ 3.f };
+	float DashRollback{ 1.5f };
 	int32 DashesLeft{ 2 };
 	int32 DashesMax{ 2 };
 
