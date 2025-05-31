@@ -320,7 +320,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMainCharacter::StartDash);
 
 		// arm input
-		EnhancedInputComponent->BindAction(MagnetAction, ETriggerEvent::Started, this, &AMainCharacter::CheckGrabObject);
+		//EnhancedInputComponent->BindAction(MagnetAction, ETriggerEvent::Started, this, &AMainCharacter::CheckGrabObject);
 		EnhancedInputComponent->BindAction(QuickMeleeAction, ETriggerEvent::Started, this, &AMainCharacter::PressedQuickMelee);
 	}
 	else
@@ -675,9 +675,8 @@ void AMainCharacter::GrabObject()
 	// Выполняем трассировку
 	FHitResult HitResult;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, TraceEnd, ECC_Visibility, Params);
-
 	// Отрисовка линии трассировки (для отладки)
-	DrawDebugLine(GetWorld(), Start, TraceEnd, FColor::Blue, false, 5.0f);
+	//DrawDebugLine(GetWorld(), Start, TraceEnd, FColor::Blue, false, 5.0f);
 
 	// Обработка попадания
 	if (bHit)

@@ -188,6 +188,7 @@ void UTP_WeaponComponent::RicochetFire()
 		FCollisionQueryParams Params = FCollisionQueryParams();
 		Params.AddIgnoredActor(GetOwner());
 		Params.AddIgnoredActor(WeaponWielder);
+
 		bool isHit = GetWorld()->LineTraceSingleByChannel(
 			WielderTraceResult,
 			StartVector,
@@ -210,42 +211,48 @@ void UTP_WeaponComponent::RicochetFire()
 		}
 
 		Params.bReturnPhysicalMaterial = true;
-		FHitResult MuzzleTraceResult{};
-		GetWorld()->LineTraceSingleByChannel(
+		TArray<FHitResult> MuzzleTraceResult{};
+		GetWorld()->LineTraceMultiByChannel(
 			MuzzleTraceResult,
 			GetSocketLocation(MuzzleSocketName),
 			EndTrace,
 			ECollisionChannel::ECC_GameTraceChannel2,
 			Params
-			);
-		MuzzleTraceResults.Add(MuzzleTraceResult);
-		float ricoshetFireDamageMoficator = 1.75;
+		);
+		for (FHitResult& hit : MuzzleTraceResult)
+		{
+			MuzzleTraceResults.Add(hit);
+		}
+		float ricoshetFireDamageMoficator = 2.15;
 		float DamageTMP = Damage;
 		Damage *= ricoshetFireDamageMoficator;
-
+		int a = 0;
 		if (Reflections > 0)
 		{
-			
 			for (int j = 0; j < CurrentMagazineCount; j++)
 			{
-				
-				if (MuzzleTraceResult.bBlockingHit)
+				for (FHitResult& hit : MuzzleTraceResult)
 				{
-					FVector UDirection = UKismetMathLibrary::GetDirectionUnitVector(MuzzleTraceResult.TraceStart, MuzzleTraceResult.TraceEnd);
-					FVector MirroredDir = UKismetMathLibrary::MirrorVectorByNormal(UDirection, MuzzleTraceResult.ImpactNormal);
+					if (hit.bBlockingHit)
+					{
 
-					FVector ScaledDiretcion = MirroredDir * 2500.f;
+						FVector UDirection = UKismetMathLibrary::GetDirectionUnitVector(hit.TraceStart, hit.TraceEnd);
+						FVector MirroredDir = UKismetMathLibrary::MirrorVectorByNormal(UDirection, hit.ImpactNormal);
 
-					FVector Start = MuzzleTraceResult.ImpactPoint + MirroredDir;
-					FVector End = MuzzleTraceResult.ImpactPoint + ScaledDiretcion;
+						FVector ScaledDiretcion = MirroredDir * 5000.f;
 
-					GetWorld()->LineTraceSingleByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel12, Params);
-					//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
-					
+						FVector Start = hit.ImpactPoint + MirroredDir;
+						FVector End = hit.ImpactPoint + ScaledDiretcion;
+
+						GetWorld()->LineTraceMultiByChannel(MuzzleTraceResult, Start, End, ECollisionChannel::ECC_GameTraceChannel2, Params);
+						//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
+
+					}
+					a++;
+					//UE_LOG(LogTemp, Error, TEXT("Number of hits: %d"), );
+					MuzzleTraceResults.Add(hit);
 				}
-				MuzzleTraceResults.Add(MuzzleTraceResult);
-				
-			}
+			}	
 		}
 		OnWeaponHitScanFireDelegate.Broadcast(MuzzleTraceResults);
 		Damage = DamageTMP;
@@ -254,6 +261,11 @@ void UTP_WeaponComponent::RicochetFire()
 	CurrentMagazineCount = 0;
 	
 
+	/*for (FHitResult hit : MuzzleTraceResults)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Number of hits: %d"), *GetNameSafe(hit.GetActor()));
+	}*/
+
 	// Try and play a firing animation for the weapon mesh if specified
 	if (WeaponMeshFireAnimation != nullptr)
 	{
@@ -261,6 +273,7 @@ void UTP_WeaponComponent::RicochetFire()
 		PlayAnimation(WeaponMeshFireAnimation, false);
 
 	}
+		
 
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
 	
@@ -422,7 +435,7 @@ void UTP_WeaponComponent::Fire()
 				WielderTraceResult,
 				StartVector,
 				EndVector,
-				ECollisionChannel::ECC_GameTraceChannel2,
+				ECollisionChannel::ECC_GameTraceChannel1,
 				Params
 			);
 
@@ -444,7 +457,7 @@ void UTP_WeaponComponent::Fire()
 				MuzzleTraceResult,
 				GetSocketLocation(MuzzleSocketName),
 				EndTrace,
-				ECollisionChannel::ECC_GameTraceChannel2,
+				ECollisionChannel::ECC_GameTraceChannel1,
 				Params
 			);
 
@@ -473,7 +486,7 @@ void UTP_WeaponComponent::Fire()
 				WielderTraceResult,
 				StartVector,
 				EndVector,
-				ECollisionChannel::ECC_GameTraceChannel2,
+				ECollisionChannel::ECC_GameTraceChannel1,
 				Params
 			);
 			
@@ -496,9 +509,11 @@ void UTP_WeaponComponent::Fire()
 				MuzzleTraceResult,
 				GetSocketLocation(MuzzleSocketName),
 				EndTrace,
-				ECollisionChannel::ECC_GameTraceChannel2,
+				ECollisionChannel::ECC_GameTraceChannel1,
 				Params
 			);
+			//FString name = MuzzleTraceResult.GetActor()->GetName();
+			//UE_LOG(LogTemp, Error, TEXT("Number of hits: %d"), *name);
 			MuzzleTraceResults.Add(MuzzleTraceResult);
 		}
 		CurrentMagazineCount = FMath::Max(CurrentMagazineCount - 1, 0);
@@ -540,7 +555,7 @@ void UTP_WeaponComponent::DrawMelee()
 		MeleeTraceBottom,
 		MeleeTraceTop,
 		Quat,
-		ECollisionChannel::ECC_GameTraceChannel2,
+		ECollisionChannel::ECC_GameTraceChannel1,
 		Capsule,
 		Params
 	);
@@ -550,20 +565,6 @@ void UTP_WeaponComponent::DrawMelee()
 		OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
 
 	}
-
-
-	/*DrawDebugCapsule
-	(
-		GetWorld(),
-		(MeleeTraceTop + MeleeTraceBottom)*0.5f,
-		FVector::Distance(MeleeTraceTop, MeleeTraceBottom)*0.5f,
-		SphereRadius,
-		Quat,
-		FColor::Cyan,
-		false,
-		50.f
-	);*/
-	//OnWeaponHitScanFireDelegate.Broadcast(MeleeTraceResult);
 }
 
 void UTP_WeaponComponent::DrawMeleeEnd()
