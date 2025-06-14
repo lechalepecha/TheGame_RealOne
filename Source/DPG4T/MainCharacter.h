@@ -397,6 +397,15 @@ public:
 
 	float GetBaseWalkSpeed() { return BaseWalkSpeed; }
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool ParryTimerCheck();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void ParryTimerRestart();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void ParryRollbackEnded();
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -437,7 +446,7 @@ protected:
 	FTimerHandle DashRollbackHandle;
 	FTimerHandle DashTime;
 
-	//FTimerHandle MantleTime;
+	FTimerHandle ParryTime;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	FVector LastVelocity;

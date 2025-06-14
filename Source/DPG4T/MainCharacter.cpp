@@ -275,7 +275,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	StartSprint();
+	//StartSprint();
 
 	if (PhysicsHandle != nullptr)
 	{
@@ -1409,7 +1409,34 @@ void AMainCharacter::PressedADS()
 		ADSing = true;
 		EnterADS();
 	}
+	else
+	{
+		if (!GetWorld()->GetTimerManager().IsTimerActive(ParryTime))
+		{
+			GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.1f, false);
+
+		}
+	}
 	
+}
+
+bool AMainCharacter::ParryTimerCheck()
+{
+	return GetWorld()->GetTimerManager().IsTimerActive(ParryTime);
+}
+
+void AMainCharacter::ParryRollbackEnded()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ParryTime);
+	ParryTime.Invalidate();
+}
+
+void AMainCharacter::ParryTimerRestart()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ParryTime);
+	ParryTime.Invalidate();
+
+	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.1f, false);
 }
 
 void AMainCharacter::EnterADS()
