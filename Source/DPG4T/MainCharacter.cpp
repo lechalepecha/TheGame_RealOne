@@ -1411,9 +1411,15 @@ void AMainCharacter::PressedADS()
 	}
 	else
 	{
-		if (!GetWorld()->GetTimerManager().IsTimerActive(ParryTime))
+		if (!isParryingActive)
 		{
-			GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.1f, false);
+			isParryingActive = true;
+
+			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPParryAnimation, 1.5f);
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AMainCharacter::OnParryEnded);
+
+			GetFPAnimInstance()->Montage_SetEndDelegate(EndDelegate, CurrentWeapon->FPParryAnimation);
 
 		}
 	}
@@ -1427,8 +1433,14 @@ bool AMainCharacter::ParryTimerCheck()
 
 void AMainCharacter::ParryRollbackEnded()
 {
+	isParryingActive = false;
 	GetWorld()->GetTimerManager().ClearTimer(ParryTime);
 	ParryTime.Invalidate();
+}
+
+void AMainCharacter::OnParryEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 1.75f, false);
 }
 
 void AMainCharacter::ParryTimerRestart()

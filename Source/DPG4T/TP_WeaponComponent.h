@@ -97,6 +97,9 @@ public:
 	UAnimMontage* FPMeleeAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FPParryAnimation = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FName MuzzleSocketName{ "Muzzle" };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -182,10 +185,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Fire();
 
-	/** Make the weapon Fire a Projectile */
+	/** Start melee weapon animation */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DrawMelee();
 	void DrawMeleeEnd();
+
+	void ParryMelee();
+
 
 	TArray<FHitResult> MeleeTraceResult;
 

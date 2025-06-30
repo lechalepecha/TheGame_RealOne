@@ -406,6 +406,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ParryRollbackEnded();
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void OnParryEnded(UAnimMontage* Montage, bool bInterrupted);
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -447,6 +450,8 @@ protected:
 	FTimerHandle DashTime;
 
 	FTimerHandle ParryTime;
+	bool isParryingActive;
+	bool isParrying;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	FVector LastVelocity;

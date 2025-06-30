@@ -578,6 +578,11 @@ void UTP_WeaponComponent::DrawMeleeEnd()
 	MeleeTraceResult.Empty();
 }
 
+void UTP_WeaponComponent::ParryMelee()
+{
+
+}
+
 void UTP_WeaponComponent::StopFire()
 {
 	RecoilStop();
