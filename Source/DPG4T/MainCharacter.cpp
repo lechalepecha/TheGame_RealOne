@@ -1426,9 +1426,9 @@ void AMainCharacter::PressedADS()
 	
 }
 
-bool AMainCharacter::ParryTimerCheck()
+bool AMainCharacter::ParryCheck()
 {
-	return GetWorld()->GetTimerManager().IsTimerActive(ParryTime);
+	return isParrying;
 }
 
 void AMainCharacter::ParryRollbackEnded()

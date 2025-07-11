@@ -398,7 +398,7 @@ public:
 	float GetBaseWalkSpeed() { return BaseWalkSpeed; }
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	bool ParryTimerCheck();
+	bool ParryCheck();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ParryTimerRestart();
