@@ -436,6 +436,10 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 	float GetDipAlpha() const { return DipAlpha; }
 
+
+	bool isParrying;
+
+
 protected:
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
@@ -451,7 +455,7 @@ protected:
 
 	FTimerHandle ParryTime;
 	bool isParryingActive;
-	bool isParrying;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	FVector LastVelocity;

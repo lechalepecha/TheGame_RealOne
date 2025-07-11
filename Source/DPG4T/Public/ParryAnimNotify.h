@@ -14,4 +14,7 @@ class DPG4T_API UParryAnimNotify : public UAnimNotifyState
 {
 	GENERATED_BODY()
 	
+	virtual void BranchingPointNotifyBegin(FBranchingPointNotifyPayload& BranchingPointPayload) override;
+	//virtual void BranchingPointNotifyTick(FBranchingPointNotifyPayload& BranchingPointPayload, float FrameDeltaTime) override;
+	virtual void BranchingPointNotifyEnd(FBranchingPointNotifyPayload& BranchingPointPayload) override;
 };

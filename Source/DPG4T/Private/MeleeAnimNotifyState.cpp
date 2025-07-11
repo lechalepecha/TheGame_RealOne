@@ -35,3 +35,4 @@ void UMeleeAnimNotifyState::BranchingPointNotifyEnd(FBranchingPointNotifyPayload
 
 	NotifyEnd(BranchingPointPayload.SkelMeshComponent, BranchingPointPayload.SequenceAsset);
 }
+ 
