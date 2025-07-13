@@ -446,7 +446,19 @@ void AMainCharacter::StartDash()
 		
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
-		FVector CurrentVelocity = GetCharacterMovement()->Velocity;
+		FVector CurrentVelocity = FVector(
+			GetCharacterMovement()->Velocity.X,
+			GetCharacterMovement()->Velocity.Y,
+			GetCharacterMovement()->Velocity.Z);
+
+		if (GetCharacterMovement()->Velocity == FVector(0.f, 0.f, 0.f))
+		{
+			CurrentVelocity = FVector(
+				GetActorForwardVector().X * 500,
+				GetActorForwardVector().Y * 500,
+				0.f);
+		}
+
 		GetCharacterMovement()->GravityScale = 0.f;
 		GetCharacterMovement()->AirControl = 0;
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
@@ -455,14 +467,15 @@ void AMainCharacter::StartDash()
 
 		GetController()->SetIgnoreMoveInput(true);
 
-		LastVelocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0.f);
+		LastVelocity = FVector(CurrentVelocity.X, CurrentVelocity.Y, 0.f);
 
 		DashDirection = FVector(LastVelocity.X * DashStrenght, LastVelocity.Y * DashStrenght, 0);
 
 		DashDirection.X = FMath::Clamp(DashDirection.X, -10000.f, 10000.f);
 		DashDirection.Y = FMath::Clamp(DashDirection.Y, -10000.f, 10000.f);
 	
-		
+		UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *DashDirection.ToString());
+
 		GetCharacterMovement()->Velocity = FVector(DashDirection.X, DashDirection.Y, 0);
 
 		DashCamTL->PlayFromStart();
