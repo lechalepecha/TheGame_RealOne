@@ -1424,13 +1424,18 @@ void AMainCharacter::PressedADS()
 	}
 	else
 	{
-		if (!isParryingActive)
+		if (!isParryingActive && !IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held)
 		{
 			isParryingActive = true;
+			IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
 
 			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPParryAnimation, 1.5f);
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &AMainCharacter::OnParryEnded);
+			if (ParryCue != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ParryCue, GetActorLocation());
+			}
 
 			GetFPAnimInstance()->Montage_SetEndDelegate(EndDelegate, CurrentWeapon->FPParryAnimation);
 

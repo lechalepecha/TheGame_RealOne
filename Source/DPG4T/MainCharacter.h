@@ -214,6 +214,12 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
 	USoundBase* DashCue = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
+	USoundBase* ParryCue = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
+	USoundBase* SuccesParryCue = nullptr;
+
 public:
 	AMainCharacter();
 
