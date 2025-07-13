@@ -1466,7 +1466,7 @@ void AMainCharacter::ParryTimerRestart()
 	GetWorld()->GetTimerManager().ClearTimer(ParryTime);
 	ParryTime.Invalidate();
 
-	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.1f, false);
+	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.01f, false);
 }
 
 void AMainCharacter::EnterADS()
