@@ -84,7 +84,7 @@ AMainCharacter::AMainCharacter()
 	Cam_Root->bInheritRoll = false;
 
 	Cam_Skel = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Cam_Skel"));
-	Cam_Skel->SetupAttachment(Cam_Root);
+	Cam_Skel->SetupAttachment(Mesh1P, FName("head"));
 	Cam_Skel->SetRelativeLocation(FVector(0.f, 0.f, -60.f));
 
 	Magnet_Object = CreateDefaultSubobject<USceneComponent>("Magnet_Object");
