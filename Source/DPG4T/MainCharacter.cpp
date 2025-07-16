@@ -405,6 +405,18 @@ void AMainCharacter::FinishedSprintDelegate()
 
 }
 
+void AMainCharacter::MantleCheck()
+{
+}
+
+void AMainCharacter::MantleStart()
+{
+}
+
+void AMainCharacter::MantleEnd()
+{
+}
+
 void AMainCharacter::StartSprint()
 {	
 	if (GetCharacterMovement()->GetLastUpdateVelocity().Length() > 0.f && CanSprint && !Sprinting && !GetWorld()->GetTimerManager().IsTimerActive(SprintTimerHandle))
