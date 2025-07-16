@@ -1458,7 +1458,7 @@ void AMainCharacter::ParryRollbackEnded()
 
 void AMainCharacter::OnParryEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 1.75f, false);
+	GetWorldTimerManager().SetTimer(ParryTime, this, &AMainCharacter::ParryRollbackEnded, 0.1f, false);
 }
 
 void AMainCharacter::ParryTimerRestart()
