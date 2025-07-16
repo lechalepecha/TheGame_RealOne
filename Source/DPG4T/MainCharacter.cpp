@@ -417,6 +417,23 @@ void AMainCharacter::MantleEnd()
 {
 }
 
+void GetPlayerMovementInput()
+{
+
+}
+void GetCapsuleBaseLocation()
+{
+
+}
+void GetControlForvardRightVector()
+{
+
+}
+void CapsuleHasRoomCheck()
+{
+
+}
+
 void AMainCharacter::StartSprint()
 {	
 	if (GetCharacterMovement()->GetLastUpdateVelocity().Length() > 0.f && CanSprint && !Sprinting && !GetWorld()->GetTimerManager().IsTimerActive(SprintTimerHandle))

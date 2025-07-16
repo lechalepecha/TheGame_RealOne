@@ -185,6 +185,8 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void MantleEnd();
 
+	
+
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction = nullptr;
@@ -489,6 +491,14 @@ protected:
 	void StartDash();
 	void EndDash();
 	void DashRollbackEnded();
+
+	void GetPlayerMovementInput();
+	void GetCapsuleBaseLocation();
+	void GetControlForvardRightVector();
+	void CapsuleHasRoomCheck();
+	FVector InitialTraceImpactPoint;
+	FVector InitialTraceNormal;
+	FVector DownTraceLocation;
 
 	void CheckGrabObject();
 	void ThrowObject();
