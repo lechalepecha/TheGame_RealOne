@@ -417,19 +417,24 @@ void AMainCharacter::MantleEnd()
 {
 }
 
-void GetPlayerMovementInput()
+void AMainCharacter::GetPlayerMovementInput()
 {
 
 }
-void GetCapsuleBaseLocation()
+FVector AMainCharacter::GetCapsuleBaseLocation(float ZOffset)
+{
+	GetCapsuleComponent()->GetComponentLocation();
+	float ScaledCapsuleSize = GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + ZOffset;
+	FVector ScaledUpVector = GetCapsuleComponent()->GetUpVector() * ScaledCapsuleSize;
+	FVector WorldLocation = GetCapsuleComponent()->GetComponentLocation() - ScaledUpVector;
+
+	return WorldLocation;
+}
+void AMainCharacter::GetControlForvardRightVector()
 {
 
 }
-void GetControlForvardRightVector()
-{
-
-}
-void CapsuleHasRoomCheck()
+void AMainCharacter::CapsuleHasRoomCheck()
 {
 
 }

@@ -493,7 +493,7 @@ protected:
 	void DashRollbackEnded();
 
 	void GetPlayerMovementInput();
-	void GetCapsuleBaseLocation();
+	FVector GetCapsuleBaseLocation(float ZOffset);
 	void GetControlForvardRightVector();
 	void CapsuleHasRoomCheck();
 	FVector InitialTraceImpactPoint;
