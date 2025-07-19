@@ -288,6 +288,10 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 	
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling)
+	{
+		MantleCheck();
+	}
 	//UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
 
@@ -405,22 +409,89 @@ void AMainCharacter::FinishedSprintDelegate()
 
 }
 
-void AMainCharacter::MantleCheck()
+bool AMainCharacter::MantleCheck()
 {
+	FVector CapsuleLocationWithInput = GetCapsuleBaseLocation(2.f) + GetVelocity()/10.f;
+	float LedgeHeight = (MaxLedgeHeight + MinLedgeHeight) / 2.f;
+	FVector StartLocation = CapsuleLocationWithInput + FVector(0.f, 0.f, LedgeHeight);
+	FVector EndLocation = StartLocation + GetVelocity() / 10.f;
+
+	float HalfHeight = (MaxLedgeHeight - MinLedgeHeight) / 2.f + 1.f;
+
+	FCollisionShape Capsule{ FCollisionShape::MakeCapsule(ForwardTraceRaius, HalfHeight)};
+	FCollisionQueryParams Params = FCollisionQueryParams();
+	Params.AddIgnoredActor(this);
+
+	FHitResult HitResult;
+
+	GetWorld()->SweepSingleByChannel(HitResult, StartLocation, EndLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Capsule, Params); 
+
+	DrawDebugCapsule(GetWorld(), FVector(EndLocation.X, EndLocation.Y, EndLocation.Z), HalfHeight, ForwardTraceRaius, FQuat::Identity, FColor::Red, false, 1.f);
+
+	if (HitResult.bBlockingHit)// && !HitResult.bStartPenetrating && !GetCharacterMovement()->IsWalkable(HitResult))
+	{
+		InitialTraceImpactPoint = HitResult.ImpactPoint;
+		InitialTraceNormal = HitResult.ImpactPoint;
+	}
+	else
+	{
+		return false;
+	}
+
+	FVector ScaledTraceNormal = InitialTraceNormal;
+	StartLocation = FVector(InitialTraceImpactPoint.X, InitialTraceImpactPoint.Y, GetCapsuleBaseLocation(2.f).Z);// +ScaledTraceNormal;
+
+	float SphereHeight = MaxLedgeHeight + DownwardTraceRadius + 1.f;
+	EndLocation = StartLocation + FVector(0.f, 0.f, SphereHeight);
+
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(DownwardTraceRadius) };
+
+	GetWorld()->SweepSingleByChannel(HitResult, EndLocation, StartLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Sphere, Params);
+	DrawDebugSphere(GetWorld(), StartLocation, DownwardTraceRadius, 32,  FColor::Blue, false, 100.f);
+
+	if (HitResult.bBlockingHit && GetCharacterMovement()->IsWalkable(HitResult))
+	{
+		DownTraceLocation = FVector(HitResult.Location.X, HitResult.Location.Y, HitResult.ImpactPoint.Z);
+		UPrimitiveComponent* PrimComp = HitResult.GetComponent();
+	}
+	else
+	{
+		return false;
+	}
+	float MantleHeight;
+	FTransform TargetTransform;
+	FVector CapsuleLocationFromBase = DownTraceLocation + FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f);
+	if (CapsuleHasRoomCheck(GetCapsuleComponent(), CapsuleLocationFromBase, 0.f, 0.f))
+	{
+		TargetTransform = FTransform(UKismetMathLibrary::Conv_VectorToRotator(InitialTraceNormal * FVector(-1.f, -1.f, 0.f)), CapsuleLocationFromBase);
+		MantleHeight = CapsuleLocationFromBase.Z - GetActorLocation().Z;
+
+	}
+	else
+	{
+		return false;
+	}
+	MantleStart(MantleHeight, TargetTransform, HitResult.GetComponent());
+	return true;
 }
 
-void AMainCharacter::MantleStart()
+void AMainCharacter::MantleStart(float MantleHeight, FTransform LedgeTransform, UPrimitiveComponent* HitComponent)
 {
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("Character should start mantling"));
+	isMantling = true;
+
 }
 
 void AMainCharacter::MantleEnd()
 {
+
 }
 
 void AMainCharacter::GetPlayerMovementInput()
 {
-
+	
 }
+
 FVector AMainCharacter::GetCapsuleBaseLocation(float ZOffset)
 {
 	GetCapsuleComponent()->GetComponentLocation();
@@ -430,13 +501,40 @@ FVector AMainCharacter::GetCapsuleBaseLocation(float ZOffset)
 
 	return WorldLocation;
 }
-void AMainCharacter::GetControlForvardRightVector()
+
+void AMainCharacter::GetControlForvardRightVector(FVector OutForwardVector, FVector OutRightVector)
 {
+	FRotator Rotation = FRotator(0.f, 0.f, GetActorRotation().Yaw);
+
+	OutForwardVector = Rotation.RotateVector(GetActorForwardVector());
+		//FVector(0.f, 0.f, UKismetMathLibrary::GetForwardVector(GetActorRotation()).Z);
+	OutRightVector = Rotation.RotateVector(GetActorRightVector());
+		//FVector(0.f, 0.f, UKismetMathLibrary::GetRightVector(GetActorRotation()).Z);
 
 }
-void AMainCharacter::CapsuleHasRoomCheck()
-{
 
+bool AMainCharacter::CapsuleHasRoomCheck(UCapsuleComponent* Capsule, FVector TargetLocation, float HeightOffset, float RadiusOffset)
+{
+	float ScaledCapsuleHalfHeight = -RadiusOffset + HeightOffset + Capsule->GetScaledCapsuleHalfHeight_WithoutHemisphere();
+	float Radius = Capsule->GetUnscaledCapsuleRadius() + RadiusOffset;
+	FVector StartLocation = TargetLocation + FVector(0.f, 0.f, ScaledCapsuleHalfHeight);
+	FVector EndLocation = TargetLocation - FVector(0.f, 0.f, ScaledCapsuleHalfHeight);
+
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(Radius) };
+	FCollisionQueryParams Params = FCollisionQueryParams();
+	Params.AddIgnoredActor(this);
+	FHitResult HitResult;
+
+	GetWorld()->SweepSingleByChannel(HitResult, StartLocation, EndLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Sphere, Params);
+
+	if (!(HitResult.bBlockingHit || HitResult.bStartPenetrating))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void AMainCharacter::StartSprint()

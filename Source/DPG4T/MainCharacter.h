@@ -177,13 +177,24 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	/* Mantle Action */
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void MantleCheck();
+	bool MantleCheck();
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void MantleStart();
+	void MantleStart(float MantleHeight, FTransform LedgeTransform, UPrimitiveComponent* HitComponent);
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void MantleEnd();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	UTimelineComponent* MantleTL = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* MantleAlphaCurve = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void MantleTLCallback(float val);
+
+	float MantleAlpha;
 
 	
 
@@ -494,11 +505,17 @@ protected:
 
 	void GetPlayerMovementInput();
 	FVector GetCapsuleBaseLocation(float ZOffset);
-	void GetControlForvardRightVector();
-	void CapsuleHasRoomCheck();
+	void GetControlForvardRightVector(FVector OutForwardVector, FVector OutRightVector);
+	bool CapsuleHasRoomCheck(UCapsuleComponent* Capsule, FVector TargetLocation, float HeightOffset, float RadiusOffset);
 	FVector InitialTraceImpactPoint;
 	FVector InitialTraceNormal;
 	FVector DownTraceLocation;
+	float MaxLedgeHeight = 250.f;
+	float MinLedgeHeight = 50.f;
+	float ReachDistance = 75.f;
+	float ForwardTraceRaius = 30.f;
+	float DownwardTraceRadius = 30.f;
+	bool isMantling;
 
 	void CheckGrabObject();
 	void ThrowObject();
