@@ -133,7 +133,9 @@ AMainCharacter::AMainCharacter()
 	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.57f, 1.f);
 	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	MantleTL->AddInterpFloat(MantleAlphaCurve, onMantleTLCallback);
-
+	FOnTimelineEvent onMantleTLFinished;
+	onMantleTLFinished.BindUFunction(this, FName{ TEXT("MantleEnd") });
+	MantleTL->SetTimelineFinishedFunc(onMantleTLFinished);
 
 	SprintTL = CreateDefaultSubobject<UTimelineComponent>(FName("SprintTL"));
 	SprintTL->SetTimelineLength(0.2f);
@@ -494,12 +496,16 @@ void AMainCharacter::MantleStart(float MantleHeight, FTransform LedgeTransform, 
 	UE_LOG(LogTemplateCharacter, Warning, TEXT("Character should start mantling"));
 	isMantling = true;
 
+	GetCharacterMovement()->StopMovementImmediately();
+	GetController()->SetIgnoreMoveInput(true);
 	MantleTarget = LedgeTransform;
 	MantleTL->PlayFromStart();
 }
 
 void AMainCharacter::MantleEnd()
 {
+	GetController()->SetIgnoreMoveInput(false);
+	isMantling = false;
 
 }
 
@@ -512,7 +518,6 @@ void AMainCharacter::MantleTLCallback(float val)
 
 void AMainCharacter::GetPlayerMovementInput()
 {
-	
 }
 
 FVector AMainCharacter::GetCapsuleBaseLocation(float ZOffset)
