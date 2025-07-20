@@ -447,6 +447,9 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void StopMove(const FInputActionValue& Value);
 
+	void CustomJump();
+	void CustomStopJump();
+
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
@@ -520,6 +523,7 @@ protected:
 	float DownwardTraceRadius = 30.f;
 	bool isMantling;
 	FTransform MantleTarget;
+	bool tryMantle;
 
 	void CheckGrabObject();
 	void ThrowObject();

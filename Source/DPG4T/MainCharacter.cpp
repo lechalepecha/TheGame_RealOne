@@ -122,7 +122,7 @@ AMainCharacter::AMainCharacter()
 	DashCamTL->AddInterpFloat(DashCamAlphaCurve, onDashCamTLCallback);
 
 	MantleTL = CreateDefaultSubobject<UTimelineComponent>(FName("MantleTL"));
-	MantleTL->SetTimelineLength(0.57f);
+	MantleTL->SetTimelineLength(0.75f);
 	MantleTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 
 	FOnTimelineFloat onMantleTLCallback;
@@ -130,7 +130,7 @@ AMainCharacter::AMainCharacter()
 	MantleAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("MantleAlphaCurve"));
 	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.57f, 1.f);
+	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.75f, 1.f);
 	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	MantleTL->AddInterpFloat(MantleAlphaCurve, onMantleTLCallback);
 	FOnTimelineEvent onMantleTLFinished;
@@ -304,7 +304,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 	
-	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling && bPressedJump)
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling && tryMantle)
 	{
 		MantleCheck();
 	}
@@ -319,8 +319,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMainCharacter::CustomJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMainCharacter::CustomStopJump);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
@@ -932,6 +932,7 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 	LandingDip();
 
+	tryMantle = false;
 	JumpsLeft = JumpsMax;
 
 	// sequence 1
@@ -961,6 +962,7 @@ void AMainCharacter::OnJumped_Implementation()
 	JumpsLeft = FMath::Clamp(JumpsLeft - 1, 0, JumpsMax);
 	Dip(5.f, 1.f);
 
+	tryMantle = true;
 
 	if (float remainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(CoyoteTimerHandle); remainingTime > 0.f)
 	{
@@ -987,6 +989,18 @@ bool AMainCharacter::CanJumpInternal_Implementation() const
 	bool isSlideTLActive = SlideTL->IsActive();
 	bool selected = isSlideTLActive ? SlideTL->GetPlaybackPosition() > 0.25f : true;
 	return (canJump || remainingTime > 0.f || JumpsLeft > 0) && (!isTimerActive && selected);
+}
+
+void AMainCharacter::CustomJump()
+{
+	tryMantle = true;
+	Super::Jump();
+}
+
+void AMainCharacter::CustomStopJump()
+{
+	tryMantle = false;
+	Super::StopJumping();
 }
 
 void AMainCharacter::CoyoteTimePassed()
