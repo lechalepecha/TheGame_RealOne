@@ -191,6 +191,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* MantleAlphaCurve = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	UCurveVector* MantleCorrectionCurve = nullptr;
+
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void MantleTLCallback(float val);
 
@@ -516,6 +519,7 @@ protected:
 	float ForwardTraceRaius = 30.f;
 	float DownwardTraceRadius = 30.f;
 	bool isMantling;
+	FTransform MantleTarget;
 
 	void CheckGrabObject();
 	void ThrowObject();

@@ -121,6 +121,20 @@ AMainCharacter::AMainCharacter()
 	DashCamAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	DashCamTL->AddInterpFloat(DashCamAlphaCurve, onDashCamTLCallback);
 
+	MantleTL = CreateDefaultSubobject<UTimelineComponent>(FName("MantleTL"));
+	MantleTL->SetTimelineLength(0.57f);
+	MantleTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+
+	FOnTimelineFloat onMantleTLCallback;
+	onMantleTLCallback.BindUFunction(this, FName{ TEXT("MantleTLCallback") });
+	MantleAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("MantleAlphaCurve"));
+	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
+	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.57f, 1.f);
+	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	MantleTL->AddInterpFloat(MantleAlphaCurve, onMantleTLCallback);
+
+
 	SprintTL = CreateDefaultSubobject<UTimelineComponent>(FName("SprintTL"));
 	SprintTL->SetTimelineLength(0.2f);
 	SprintTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
@@ -411,10 +425,10 @@ void AMainCharacter::FinishedSprintDelegate()
 
 bool AMainCharacter::MantleCheck()
 {
-	FVector CapsuleLocationWithInput = GetCapsuleBaseLocation(2.f) + GetVelocity()/10.f;
+	FVector CapsuleLocationWithInput = GetCapsuleBaseLocation(2.f) + GetActorForwardVector() * 50.f;
 	float LedgeHeight = (MaxLedgeHeight + MinLedgeHeight) / 2.f;
 	FVector StartLocation = CapsuleLocationWithInput + FVector(0.f, 0.f, LedgeHeight);
-	FVector EndLocation = StartLocation + GetVelocity() / 10.f;
+	FVector EndLocation = StartLocation + GetActorForwardVector() * 50.f;
 
 	float HalfHeight = (MaxLedgeHeight - MinLedgeHeight) / 2.f + 1.f;
 
@@ -428,7 +442,7 @@ bool AMainCharacter::MantleCheck()
 
 	DrawDebugCapsule(GetWorld(), FVector(EndLocation.X, EndLocation.Y, EndLocation.Z), HalfHeight, ForwardTraceRaius, FQuat::Identity, FColor::Red, false, 1.f);
 
-	if (HitResult.bBlockingHit)// && !HitResult.bStartPenetrating && !GetCharacterMovement()->IsWalkable(HitResult))
+	if (HitResult.bBlockingHit && !HitResult.bStartPenetrating && !GetCharacterMovement()->IsWalkable(HitResult))
 	{
 		InitialTraceImpactPoint = HitResult.ImpactPoint;
 		InitialTraceNormal = HitResult.ImpactPoint;
@@ -447,7 +461,7 @@ bool AMainCharacter::MantleCheck()
 	FCollisionShape Sphere{ FCollisionShape::MakeSphere(DownwardTraceRadius) };
 
 	GetWorld()->SweepSingleByChannel(HitResult, EndLocation, StartLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Sphere, Params);
-	DrawDebugSphere(GetWorld(), StartLocation, DownwardTraceRadius, 32,  FColor::Blue, false, 100.f);
+	DrawDebugSphere(GetWorld(), EndLocation, DownwardTraceRadius, 32,  FColor::Blue, false, 100.f);
 
 	if (HitResult.bBlockingHit && GetCharacterMovement()->IsWalkable(HitResult))
 	{
@@ -480,11 +494,20 @@ void AMainCharacter::MantleStart(float MantleHeight, FTransform LedgeTransform, 
 	UE_LOG(LogTemplateCharacter, Warning, TEXT("Character should start mantling"));
 	isMantling = true;
 
+	MantleTarget = LedgeTransform;
+	MantleTL->PlayFromStart();
 }
 
 void AMainCharacter::MantleEnd()
 {
 
+}
+
+void AMainCharacter::MantleTLCallback(float val)
+{
+	MantleAlpha = val;
+	FVector newLocation = FMath::Lerp(GetActorLocation(), MantleTarget.GetLocation(), MantleAlpha);
+	SetActorLocation(newLocation);
 }
 
 void AMainCharacter::GetPlayerMovementInput()
