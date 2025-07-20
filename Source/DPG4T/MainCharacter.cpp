@@ -304,7 +304,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 	
-	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling)
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling && bPressedJump)
 	{
 		MantleCheck();
 	}
@@ -494,12 +494,16 @@ bool AMainCharacter::MantleCheck()
 void AMainCharacter::MantleStart(float MantleHeight, FTransform LedgeTransform, UPrimitiveComponent* HitComponent)
 {
 	UE_LOG(LogTemplateCharacter, Warning, TEXT("Character should start mantling"));
-	isMantling = true;
 
-	GetCharacterMovement()->StopMovementImmediately();
-	GetController()->SetIgnoreMoveInput(true);
-	MantleTarget = LedgeTransform;
-	MantleTL->PlayFromStart();
+	if (!isDashing)
+	{
+		isMantling = true;
+		GetCharacterMovement()->StopMovementImmediately();
+		GetController()->SetIgnoreMoveInput(true);
+		MantleTarget = LedgeTransform;
+		MantleTL->PlayFromStart();
+	}
+
 }
 
 void AMainCharacter::MantleEnd()
