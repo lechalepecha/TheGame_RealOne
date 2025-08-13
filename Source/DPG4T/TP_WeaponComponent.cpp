@@ -43,6 +43,11 @@ void UTP_WeaponComponent::BeginPlay()
 		ADSTL->AddInterpFloat(ADSAlphaCurve, onADSTLCallback);
 	}
 
+	if (UFPAnimInstance* fpAnimInstance = Cast<UFPAnimInstance>(GetAnimInstance()))
+	{
+		FPAnimInstance = fpAnimInstance;
+	}
+
 	/*if (ScopeSightMesh != nullptr)
 	{
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
@@ -672,7 +677,8 @@ void UTP_WeaponComponent::Reload()
 	IsReloading = true;
 
 	ExitADS(false);
-	IWeaponWielderInterface::Execute_OnReloadSuccess(WeaponWielder);
+
+	
 	IWeaponWielderInterface::Execute_OnWeaponReload(WeaponWielder);
 }
 

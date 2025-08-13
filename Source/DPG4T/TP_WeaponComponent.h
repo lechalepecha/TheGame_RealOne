@@ -315,6 +315,11 @@ public:
 	void RecoilRecoveryTimerCallback();
 	bool IsShouldRecoil = false;
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFPAnimInstance* GetFPAnimInstance() { return FPAnimInstance; }
+
+	UFPAnimInstance* FPAnimInstance = nullptr;
+
 	// Weapon Mesh Recoil/Kick
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Recoil)
 	FVector RecoilLocMin{ -0.1f, -3.f, 0.2f };
