@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "Components/TimelineComponent.h"
@@ -43,10 +44,10 @@ void UTP_WeaponComponent::BeginPlay()
 		ADSTL->AddInterpFloat(ADSAlphaCurve, onADSTLCallback);
 	}
 
-	if (UFPAnimInstance* fpAnimInstance = Cast<UFPAnimInstance>(GetAnimInstance()))
+	/*if (UFPAnimInstance* fpAnimInstance = Cast<UFPAnimInstance>(GetAnimInstance()))
 	{
 		FPAnimInstance = fpAnimInstance;
-	}
+	}*/
 
 	/*if (ScopeSightMesh != nullptr)
 	{
@@ -676,6 +677,13 @@ void UTP_WeaponComponent::Reload()
 	}
 	IsReloading = true;
 
+	
+	if (WeaponMeshReloadAnimation != nullptr)
+	{
+		SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		PlayAnimation(WeaponMeshReloadAnimation, false);
+
+	}
 	ExitADS(false);
 
 	

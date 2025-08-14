@@ -33,6 +33,7 @@ class DPG4T_API UTP_WeaponComponent : public USkeletalMeshComponent
 	GENERATED_BODY()
 
 public:
+
 	/** projectile class to spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	bool IsProjectileWeapon = true;
@@ -50,6 +51,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimSequence* WeaponMeshFireAnimation = nullptr;
 	TEnumAsByte<EAnimationMode::Type> DefaultAnimationMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimSequence* WeaponMeshReloadAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	TSubclassOf<UAnimInstance> TPWeaponAnimLinkLayer;
@@ -314,11 +318,6 @@ public:
 	void RecoilTimerCallback();
 	void RecoilRecoveryTimerCallback();
 	bool IsShouldRecoil = false;
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	UFPAnimInstance* GetFPAnimInstance() { return FPAnimInstance; }
-
-	UFPAnimInstance* FPAnimInstance = nullptr;
 
 	// Weapon Mesh Recoil/Kick
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Recoil)
