@@ -275,7 +275,7 @@ void UTP_WeaponComponent::RicochetFire()
 	// Try and play a firing animation for the weapon mesh if specified
 	if (WeaponMeshFireAnimation != nullptr)
 	{
-		SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		//SetAnimationMode(EAnimationMode::AnimationSingleNode);
 		PlayAnimation(WeaponMeshFireAnimation, false);
 
 	}
@@ -530,7 +530,7 @@ void UTP_WeaponComponent::Fire()
 	// Try and play a firing animation for the weapon mesh if specified
 	if (WeaponMeshFireAnimation != nullptr)
 	{
-		SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		//SetAnimationMode(EAnimationMode::AnimationSingleNode);
 		PlayAnimation(WeaponMeshFireAnimation, false);
 
 	}
@@ -663,6 +663,8 @@ void UTP_WeaponComponent::OnReloaded()
 	int newValue = FMath::Max(IWeaponWielderInterface::Execute_GetRemainingAmmo(WeaponWielder) - toBeLoaded, 0);
 	IWeaponWielderInterface::Execute_SetRemainingAmmo(WeaponWielder, newValue);
 	CurrentMagazineCount = FMath::Clamp(toBeLoaded, 0, MaxMagazineCount);
+	//SetAnimationMode(EAnimationMode::AnimationBlueprint);
+
 }
 
 void UTP_WeaponComponent::Reload()
@@ -680,8 +682,11 @@ void UTP_WeaponComponent::Reload()
 	
 	if (WeaponMeshReloadAnimation != nullptr)
 	{
-		SetAnimationMode(EAnimationMode::AnimationSingleNode);
-		PlayAnimation(WeaponMeshReloadAnimation, false);
+		//SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		//SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		//PlayAnimation(WeaponMeshReloadAnimation, false);
+		
+
 
 	}
 	ExitADS(false);
