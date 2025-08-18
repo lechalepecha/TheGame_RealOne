@@ -363,7 +363,7 @@ public:
 	bool ADSing;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
-	UAnimMontage* DefaultFPMeleeAnimation = nullptr;
+	UAnimMontage* ParryAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
 	UAnimMontage* DefaultTPMeleeAnimation = nullptr;

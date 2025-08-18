@@ -680,15 +680,10 @@ void UTP_WeaponComponent::Reload()
 	IsReloading = true;
 
 	
-	if (WeaponMeshReloadAnimation != nullptr)
+	/*if (WeaponMeshReloadAnimation != nullptr)
 	{
-		//SetAnimationMode(EAnimationMode::AnimationSingleNode);
-		//SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		//PlayAnimation(WeaponMeshReloadAnimation, false);
-		
-
-
-	}
+	
+	}*/
 	ExitADS(false);
 
 	
