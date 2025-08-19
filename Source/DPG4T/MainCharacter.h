@@ -346,7 +346,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void OnFinishPlay_Implementation() override { RemoveWeaponInputMapping(); }
 
-
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void PlayParryToIdle();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void RemoveWeaponInputMapping();
@@ -364,6 +365,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
 	UAnimMontage* ParryAnimation = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
+	UAnimMontage* ParryToIdleAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
 	UAnimMontage* DefaultTPMeleeAnimation = nullptr;

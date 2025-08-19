@@ -1430,6 +1430,11 @@ void AMainCharacter::OnADSTLUpdate_Implementation(float TLValue)
 	//CurrentWeapon->ScopeSightMesh->OnWeaponADSTLUpdateDelegate.Broadcast(ADSAlpha); // set opacity of scope if applicable
 }
 
+void AMainCharacter::PlayParryToIdle()
+{
+	GetFPAnimInstance()->Montage_Play(ParryToIdleAnimation, 1.f);
+}
+
 void AMainCharacter::RemoveWeaponInputMapping()
 {
 	APlayerController* PCRef = Cast<APlayerController>(GetController());
