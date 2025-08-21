@@ -728,7 +728,7 @@ void AMainCharacter::CustomCrouch()
 	case ECustomMovementMode::Sprinting:
 		if (GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Falling)
 		{
-			Sliding();
+			//Sliding();
 			UE_LOG(LogTemplateCharacter, Error, TEXT("You were sprinting now you sliding"));
 		}
 		break;
@@ -891,7 +891,7 @@ void AMainCharacter::Move(const FInputActionValue& Value)
 
 void AMainCharacter::StopMove(const FInputActionValue& Value)
 {
-	CheckStopSprint(0.f);
+	//CheckStopSprint(0.f);
 }
 
 void AMainCharacter::Look(const FInputActionValue& Value)
@@ -948,7 +948,7 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	// sequence 2
 	if (CrouchKeyHeld && MoveMode == ECustomMovementMode::Sprinting)
 	{
-		ForceStartSlide();
+		//ForceStartSlide();
 	}
 
 	GetWorldTimerManager().SetTimer(DashRollbackHandle, this, &AMainCharacter::DashRollbackEnded, DashRollback, false);
@@ -1341,7 +1341,7 @@ bool AMainCharacter::InstantDetachWeapon_Implementation()
 	RemoveWeaponInputMapping();
 	UTP_WeaponComponent* toBeDetached = IWeaponWielderInterface::Execute_GetCurrentWeapon(this);
 	toBeDetached->IsStowing = true;
-	toBeDetached->ExitADS(true);
+	//toBeDetached->ExitADS(true);
 
 	SetHasWeapon(false);
 	SetCurrentWeapon(nullptr);
@@ -1428,11 +1428,6 @@ void AMainCharacter::OnADSTLUpdate_Implementation(float TLValue)
 	float newSpeedMultiplier = FMath::Clamp(CurrentWeapon->ADSAlphaLerp, 0.55f, 1.f);
 	GetCharacterMovement()->MaxWalkSpeed = GetBaseWalkSpeed() * newSpeedMultiplier;
 	//CurrentWeapon->ScopeSightMesh->OnWeaponADSTLUpdateDelegate.Broadcast(ADSAlpha); // set opacity of scope if applicable
-}
-
-void AMainCharacter::PlayParryToIdle()
-{
-	GetFPAnimInstance()->Montage_Play(ParryToIdleAnimation, 1.f);
 }
 
 void AMainCharacter::RemoveWeaponInputMapping()
@@ -1576,7 +1571,7 @@ void AMainCharacter::PressedReload()
 	if (!CanAct())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Player could'nt act"));
-		ForceStopSprint();
+		//ForceStopSprint();
 	}
 	UE_LOG(LogTemp, Error, TEXT("Player trying to reload"));
 
@@ -1597,7 +1592,7 @@ void AMainCharacter::PressedSwitchFireMode()
 
 void AMainCharacter::PressedADS()
 {
-	if (!IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
+	/*if (!IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->IsMeleeWeapon)
 	{
 		IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
 		//UE_LOG(LogTemp, Error, TEXT("ADSed"));
@@ -1606,24 +1601,24 @@ void AMainCharacter::PressedADS()
 		EnterADS();
 	}
 	else
+	{*/
+	if (!isParryingActive && !IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held)
 	{
-		if (!isParryingActive && !IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held)
+		isParryingActive = true;
+		IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
+
+		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPParryAnimation, 1.5f);
+		FOnMontageEnded EndDelegate;
+		EndDelegate.BindUObject(this, &AMainCharacter::OnParryEnded);
+		if (ParryCue != nullptr)
 		{
-			isParryingActive = true;
-			IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Held = true;
-
-			GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPParryAnimation, 1.5f);
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AMainCharacter::OnParryEnded);
-			if (ParryCue != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ParryCue, GetActorLocation());
-			}
-
-			GetFPAnimInstance()->Montage_SetEndDelegate(EndDelegate, CurrentWeapon->FPParryAnimation);
-
+			UGameplayStatics::PlaySoundAtLocation(this, ParryCue, GetActorLocation());
 		}
+
+		GetFPAnimInstance()->Montage_SetEndDelegate(EndDelegate, CurrentWeapon->FPParryAnimation);
+
 	}
+	//}
 	
 }
 
@@ -1666,7 +1661,7 @@ void AMainCharacter::EnterADS()
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADSTL->SetPlayRate(FMath::Clamp(IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADS_Speed, 0.1f, 10.f));
 
 	GetFPAnimInstance()->SetSprintBlendOutTime(0.25f);
-	ForceStopSprint();
+	//ForceStopSprint();
 	IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->ADSTL->Play();
 }
 
@@ -1731,7 +1726,7 @@ void AMainCharacter::PressedQuickMelee()
 	if (!CanAct())
 	{
 		GetFPAnimInstance()->SetSprintBlendOutTime(GetFPAnimInstance()->InstantSprintBlendOutTime);
-		ForceStopSprint();
+		//ForceStopSprint();
 	}
 	if (ADSAlpha > 0.f)
 	{
@@ -1800,18 +1795,18 @@ void AMainCharacter::ForceStartSprint()
 {
 	StartSprint();
 }
-*/
+
 void AMainCharacter::ForceStopSlide()
 {
 	SlideTL->Stop();
 	StopSlide();
 }
-
+*/
 void AMainCharacter::ForceUnCrouch()
 {
 	CustomUnCrouch();
 }
-
+/*
 void AMainCharacter::ForceStartSlide()
 {
 	Sliding();
@@ -1928,7 +1923,7 @@ void AMainCharacter::FinishedSlideDelegate()
 {
 	StopSlide();
 }
-
+*/
 
 // can the character perform actions?
 // these actions cannot be performed while sprinting

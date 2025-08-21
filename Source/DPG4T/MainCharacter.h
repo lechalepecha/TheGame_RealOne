@@ -121,10 +121,10 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	void StartSprint();
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void CheckStopSprint(float InAxis);
+	//UFUNCTION(BlueprintCallable, Category = "Movement")
+	//void CheckStopSprint(float InAxis);
 
-	void StopSprint();
+	//void StopSprint();
 
 	//float SprintCharge;
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay, meta = (AllowPrivateAccess = "true"))
@@ -133,14 +133,14 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	//UFUNCTION(BlueprintCallable, Category = "Movement")
 	//void SprintChargeIncrease();
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
+	/*UFUNCTION(BlueprintCallable, Category = "Movement")
 	void StartSlide();
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Sliding();
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void StopSlide();
+	void StopSlide();*/
 
 	FVector SlideDirection;
 
@@ -150,8 +150,8 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* SlideAlphaCurve = nullptr;
 
-	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void SlideTLCallback(float val);
+	/*UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void SlideTLCallback(float val); */
 
 	float SlideAlpha;
 
@@ -168,8 +168,8 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	bool isDashing = false;
 
-	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void FinishedSlideDelegate();
+	/*UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void FinishedSlideDelegate(); */
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void FinishedSprintDelegate();
@@ -347,9 +347,6 @@ public:
 	void OnFinishPlay_Implementation() override { RemoveWeaponInputMapping(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void PlayParryToIdle();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void RemoveWeaponInputMapping();
 
 	/** Look Input Action */
@@ -414,7 +411,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	bool CanAct();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	/*UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ForceStopSprint();
 
 	//UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -422,13 +419,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ForceStopSlide();
-
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ForceUnCrouch();
-
+	/*
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ForceStartSlide();
-
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	UFPAnimInstance* GetFPAnimInstance() { return FPAnimInstance; }
 

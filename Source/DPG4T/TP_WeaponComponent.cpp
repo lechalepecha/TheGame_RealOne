@@ -684,7 +684,7 @@ void UTP_WeaponComponent::Reload()
 	{
 	
 	}*/
-	ExitADS(false);
+	//ExitADS(false);
 
 	
 	IWeaponWielderInterface::Execute_OnWeaponReload(WeaponWielder);
@@ -696,7 +696,7 @@ void UTP_WeaponComponent::CancelReload(float BlendTime)
 	IWeaponWielderInterface::Execute_OnWeaponStopReloadAnimation(WeaponWielder, BlendTime);
 }
 
-void UTP_WeaponComponent::ExitADS(bool IsFast)
+/*void UTP_WeaponComponent::ExitADS(bool IsFast)
 {
 	if (IsFast)
 	{
@@ -708,7 +708,7 @@ void UTP_WeaponComponent::ExitADS(bool IsFast)
 void UTP_WeaponComponent::ADSTLCallback(float val)
 {
 	IWeaponWielderInterface::Execute_OnADSTLUpdate(WeaponWielder, val);
-}
+}*/
 
 //Call this function when the firing begins, the recoil starts here
 void UTP_WeaponComponent::RecoilStart()

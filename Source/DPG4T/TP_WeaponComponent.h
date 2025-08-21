@@ -179,8 +179,8 @@ public:
 	float ADSAlpha{ 0.f };
 	float ADSAlphaLerp{ 1.f };
 
-	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void ADSTLCallback(float val);
+	//UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	//void ADSTLCallback(float val);
 
 	/** Sets default values for this component's properties */
 	UTP_WeaponComponent();
@@ -254,8 +254,8 @@ public:
 	void CancelReload(float BlendTime);
 
 	/** force Exit Aim down sight */
-	UFUNCTION(BlueprintCallable, Category = "ADS")
-	void ExitADS(bool IsFast);
+	//UFUNCTION(BlueprintCallable, Category = "ADS")
+	//void ExitADS(bool IsFast);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ADS")
 	bool ADS_Held;
