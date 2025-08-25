@@ -171,7 +171,7 @@ AMainCharacter::AMainCharacter()
 	DipTL->AddInterpFloat(DipAlphaCurve, onDipTLCallback);
 
 	WalkingTL = CreateDefaultSubobject<UTimelineComponent>(FName("WalkingTL"));
-	WalkingTL->SetTimelineLength(1.f);
+	WalkingTL->SetTimelineLength(1.25f);
 	WalkingTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 	WalkingTL->SetLooping(true);
 
@@ -180,13 +180,13 @@ AMainCharacter::AMainCharacter()
 	WalkLeftRightAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("WalkLeftRightAlphaCurve"));
 	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.375f, 0.5f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.3125f, 0.5f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.75f, 1.f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.625f, 1.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.125f, 0.5f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.9375f, 0.5f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.5f, 0.f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.25f, 0.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	WalkingTL->AddInterpFloat(WalkLeftRightAlphaCurve, onWalkingLeftRightTLCallback);
 
@@ -195,13 +195,13 @@ AMainCharacter::AMainCharacter()
 	WalkUpDownAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("WalkUpDownAlphaCurve"));
 	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.375f, 1.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.3125f, 1.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.75f, 0.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.625f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.125f, 1.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.9375f, 1.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.5f, 0.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.25f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	WalkingTL->AddInterpFloat(WalkUpDownAlphaCurve, onWalkingUpDownTLCallback);
 
@@ -210,22 +210,22 @@ AMainCharacter::AMainCharacter()
 	WalkRollAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("WalkRollAlphaCurve"));
 	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.f, 0.18f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.15f, 0.f);
+	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.25f, 0.f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.4f, 0.5f);
+	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.5f, 0.5f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.65f, 1.f);
+	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.75f, 1.f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(0.9f, 0.5f);
+	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(1.0f, 0.5f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(1.f, 0.18f);
+	KeyHandle = WalkRollAlphaCurve->FloatCurve.AddKey(1.25f, 0.18f);
 	WalkRollAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	WalkingTL->AddInterpFloat(WalkRollAlphaCurve, onWalkingRollTLCallback);
 
 	FOnTimelineEvent footstepEvent;
 	footstepEvent.BindUFunction(this, FName{ TEXT("WalkTLFootstepCallback") });
-	WalkingTL->AddEvent(0.375f, footstepEvent);
-	WalkingTL->AddEvent(1.125f, footstepEvent);
+	WalkingTL->AddEvent(0.3125f, footstepEvent);
+	WalkingTL->AddEvent(0.8375f, footstepEvent);
 
 	FOnTimelineEvent updateWalkEvent;
 	updateWalkEvent.BindUFunction(this, FName{ TEXT("WalkTLUpdateEvent") });
@@ -1086,7 +1086,7 @@ void AMainCharacter::WalkTLUpdateEvent()
 	WalkAnimPos = FVector(lerpedWalkAnimPosX, 0.f, lerpedWalkAnimPosZ);
 
 	// update walk anim rotation
-	float lerpedWalkAnimRotPitch = FMath::Lerp(1.f, -1.f, WalkRollAlpha);
+	float lerpedWalkAnimRotPitch = FMath::Lerp(4.f, -4.f, WalkRollAlpha);
 	WalkAnimRot = FRotator(lerpedWalkAnimRotPitch, 0.f, 0.f);
 
 	// get alpha of walking intensity
@@ -1180,10 +1180,10 @@ void AMainCharacter::GetLookInputVars(FRotator CamRotPrev)
 	// Step 3: figuring out the amount to offset our viewmodel by,
 	// in order to counteract the rotation of our weapon sway
 	float normalizedRoll = UKismetMathLibrary::NormalizeToRange(CamRotRate.Roll, -5.f, 5.f);
-	float lerpedRoll = FMath::Lerp(-10.f, 10.f, normalizedRoll);
+	float lerpedRoll = FMath::Lerp(-7.5f, 7.5f, normalizedRoll);
 
 	float normalizedYaw = UKismetMathLibrary::NormalizeToRange(CamRotRate.Yaw, -5.f, 5.f);
-	float lerpedYaw = FMath::Lerp(-6.f, 6.f, normalizedYaw);
+	float lerpedYaw = FMath::Lerp(-3.f, 3.f, normalizedYaw);
 	CamRotOffset = FVector(lerpedYaw, 0.f, lerpedRoll);
 
 }
