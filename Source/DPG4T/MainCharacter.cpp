@@ -180,13 +180,13 @@ AMainCharacter::AMainCharacter()
 	WalkLeftRightAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("WalkLeftRightAlphaCurve"));
 	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.25f, 0.5f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.375f, 0.5f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.5f, 1.f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.75f, 1.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(0.75f, 0.5f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.125f, 0.5f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.f, 0.f);
+	KeyHandle = WalkLeftRightAlphaCurve->FloatCurve.AddKey(1.5f, 0.f);
 	WalkLeftRightAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	WalkingTL->AddInterpFloat(WalkLeftRightAlphaCurve, onWalkingLeftRightTLCallback);
 
@@ -195,13 +195,13 @@ AMainCharacter::AMainCharacter()
 	WalkUpDownAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("WalkUpDownAlphaCurve"));
 	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.3f, 1.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.375f, 1.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.5f, 0.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.75f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(0.8f, 1.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.125f, 1.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.f, 0.f);
+	KeyHandle = WalkUpDownAlphaCurve->FloatCurve.AddKey(1.5f, 0.f);
 	WalkUpDownAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	WalkingTL->AddInterpFloat(WalkUpDownAlphaCurve, onWalkingUpDownTLCallback);
 
@@ -224,8 +224,8 @@ AMainCharacter::AMainCharacter()
 
 	FOnTimelineEvent footstepEvent;
 	footstepEvent.BindUFunction(this, FName{ TEXT("WalkTLFootstepCallback") });
-	WalkingTL->AddEvent(0.35f, footstepEvent);
-	WalkingTL->AddEvent(0.85f, footstepEvent);
+	WalkingTL->AddEvent(0.375f, footstepEvent);
+	WalkingTL->AddEvent(1.125f, footstepEvent);
 
 	FOnTimelineEvent updateWalkEvent;
 	updateWalkEvent.BindUFunction(this, FName{ TEXT("WalkTLUpdateEvent") });
@@ -1080,8 +1080,9 @@ void AMainCharacter::WalkTLFootstepCallback()
 void AMainCharacter::WalkTLUpdateEvent()
 {
 	// update walk anim position
-	float lerpedWalkAnimPosX = FMath::Lerp(-0.4f, 0.4f, WalkLeftRightAlpha);
-	float lerpedWalkAnimPosZ = FMath::Lerp(-0.35f, 0.2f, WalkUpDownAlpha);
+	
+	float lerpedWalkAnimPosX = FMath::Lerp(-0.8f, 0.8f, WalkLeftRightAlpha);
+	float lerpedWalkAnimPosZ = FMath::Lerp(-0.65f, 0.4f, WalkUpDownAlpha);
 	WalkAnimPos = FVector(lerpedWalkAnimPosX, 0.f, lerpedWalkAnimPosZ);
 
 	// update walk anim rotation
