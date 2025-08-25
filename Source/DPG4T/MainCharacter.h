@@ -10,6 +10,7 @@
 #include "Public/FPAnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Weapon/WeaponWielderInterface.h"
+#include "EAbilityType.h"
 #include "MainCharacter.generated.h"
 
 
@@ -476,8 +477,23 @@ public:
 
 	bool isParrying;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	EAbilityType FirstSlotAbility{ EAbilityType::ForcePush };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	EAbilityType SecondSlotAbility{ EAbilityType::None };
+
 
 protected:
+
+	/*Hand ability*/
+	FTimerHandle FirstSlotHandAbilityTimer;
+	float FirstSlotRollBack{ 2.f };
+	FTimerHandle SecondSlotHAndAbilityTimer;
+	float SecondSlotRollBack{ 2.f };
+
+
+
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	float CrouchAlpha;

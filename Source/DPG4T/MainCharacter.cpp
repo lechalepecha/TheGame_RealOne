@@ -20,6 +20,7 @@
 #include "TP_WeaponComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "MeleeAnimNotifyState.h"
+#include "EAbilityType.h"
 
 //#include "SightMeshComponent.h"
 #include "Public/FPAnimInstance.h"
