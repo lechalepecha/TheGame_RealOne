@@ -342,7 +342,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 		// arm input
 		EnhancedInputComponent->BindAction(MagnetAction, ETriggerEvent::Started, this, &AMainCharacter::HandAbility);
-		EnhancedInputComponent->BindAction(QuickMeleeAction, ETriggerEvent::Started, this, &AMainCharacter::ChangeAbilityType);
+		EnhancedInputComponent->BindAction(QuickMeleeAction, ETriggerEvent::Started, this, &AMainCharacter::PressedQuickMelee);
 	}
 	else
 	{
@@ -1733,7 +1733,7 @@ int32 AMainCharacter::SetRemainingAmmo_Implementation(int32 NewValue)
 	}
 }
 
-void AMainCharacter::ChangeAbilityType()
+void AMainCharacter::PressedQuickMelee()
 {
 	if (CurrentSlot != SecondSlotAbility)
 	{

@@ -113,7 +113,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	class UInputAction* SwitchToNextWeaponAction = nullptr;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ChangeAbilityType();
+	void PressedQuickMelee();
 
 	//UFUNCTION(BlueprintCallable, Category = "Movement")
 	//void PressedSprint();

@@ -15,5 +15,5 @@ enum class EAbilityType : uint8
 	ForcePush,
 	SliceDash,
 	SingleStun,
-	ManyStun
+	MegaPunch
 };
