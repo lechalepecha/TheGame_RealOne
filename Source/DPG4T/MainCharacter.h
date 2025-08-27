@@ -115,6 +115,14 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ChangeAbilityType();
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ForcePushAbility();
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void SliceDachAbility();
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void SingleStunAbility();
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void MegaPunchAbility();
 	//UFUNCTION(BlueprintCallable, Category = "Movement")
 	//void PressedSprint();
 

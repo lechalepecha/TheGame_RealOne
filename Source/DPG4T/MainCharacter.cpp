@@ -822,12 +822,16 @@ void AMainCharacter::HandAbility()
 	case EAbilityType::None:
 		break;
 	case EAbilityType::ForcePush:
+		ForcePushAbility();
 		break;
 	case EAbilityType::SliceDash:
+		SliceDachAbility();
 		break;
 	case EAbilityType::SingleStun:
+		SingleStunAbility();
 		break;
 	case EAbilityType::MegaPunch:
+		MegaPunchAbility();
 		break;
 	default:
 		break;
@@ -835,6 +839,49 @@ void AMainCharacter::HandAbility()
 
 	UE_LOG(LogTemplateCharacter, Error, TEXT("Trying to use ability from curent slot: %s"), *UEnum::GetValueAsString(CurrentSlot));
 
+}
+
+void AMainCharacter::ForcePushAbility()
+{
+	FVector StartVector = FirstPersonCameraComponent->GetComponentLocation();
+	FVector EndVector = FirstPersonCameraComponent->GetForwardVector() * 150.f;
+
+	FCollisionQueryParams params = FCollisionQueryParams();
+	params.AddIgnoredActor(this);
+
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(100.f) };
+	
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndVector, ECC_Visibility, params);
+
+	if (HitResult.bBlockingHit)
+	{
+		TArray<FHitResult> HitResults;
+		FCollisionQueryParams SphereParams = FCollisionQueryParams();
+		FVector HitLoc = HitResult.Location;
+		GetWorld()->SweepMultiByChannel(HitResults, HitLoc, GetActorForwardVector(), FQuat::Identity, ECC_Visibility, Sphere, SphereParams);
+		DrawDebugSphere(GetWorld(), HitLoc, 100.f, 32, FColor::Cyan, false, 10.f);
+	}
+	else
+	{
+		TArray<FHitResult> HitResults;
+		FCollisionQueryParams SphereParams = FCollisionQueryParams();
+		FVector HitLoc = EndVector;
+		GetWorld()->SweepMultiByChannel(HitResults, HitLoc, GetActorForwardVector(), FQuat::Identity, ECC_Visibility, Sphere, SphereParams);
+		DrawDebugSphere(GetWorld(), HitLoc, 100.f, 32, FColor::Cyan, false, 10.f);
+	}
+}
+
+void AMainCharacter::SliceDachAbility()
+{
+}
+
+void AMainCharacter::SingleStunAbility()
+{
+}
+
+void AMainCharacter::MegaPunchAbility()
+{
 }
 
 void AMainCharacter::ThrowObject()
