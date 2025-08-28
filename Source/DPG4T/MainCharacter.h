@@ -28,6 +28,8 @@ class UPhysicsHandleComponent;
 class UPawnNoiseEmitterComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilityApply, FHitResult, HitResult);
+
 
 UCLASS(config = Game)
 class AMainCharacter : public ACharacter, public IWeaponWielderInterface
@@ -123,6 +125,8 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void SingleStunAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void MegaPunchAbility();
+
+
 	//UFUNCTION(BlueprintCallable, Category = "Movement")
 	//void PressedSprint();
 
@@ -258,6 +262,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 public:
 	AMainCharacter();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAbilityApply OnAbilityApplyDelegate;
 
 protected:
 	virtual void BeginPlay();
