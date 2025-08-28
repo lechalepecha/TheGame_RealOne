@@ -849,8 +849,6 @@ void AMainCharacter::ForcePushAbility()
 
 	FCollisionQueryParams params = FCollisionQueryParams();
 	params.AddIgnoredActor(this);
-
-	FCollisionShape Sphere{ FCollisionShape::MakeSphere(400.f) };
 	
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_Visibility, params);
@@ -858,47 +856,38 @@ void AMainCharacter::ForcePushAbility()
 
 	if (HitResult.bBlockingHit)
 	{
-		TArray<FHitResult> HitResults;
-		FCollisionQueryParams SphereParams = FCollisionQueryParams();
-		FVector HitLocation = HitResult.Location;
-		GetWorld()->SweepMultiByChannel(HitResults, HitLocation, GetActorForwardVector(), FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
-		DrawDebugSphere(GetWorld(), HitLocation, 400.f, 32, FColor::Cyan, false, 1.f);
-
-		for(FHitResult hit : HitResults)
-		{
-			if (hit.GetActor() != this)
-			{
-				FVector SphereHit =GetActorLocation() + hit.Location * 100.f;
-				if (hit.GetComponent()->IsSimulatingPhysics())
-				{
-					hit.GetComponent()->AddImpulse(SphereHit);
-				}
-
-			}
-			OnAbilityApplyDelegate.Broadcast(hit);
-
-		}
+		SphereTraceImpact(HitResult.Location);
 	}
 	else
 	{
-		TArray<FHitResult> HitResults;
-		FCollisionQueryParams SphereParams = FCollisionQueryParams();
-		FVector HitLocation = EndLocation;
-		GetWorld()->SweepMultiByChannel(HitResults, HitLocation, GetActorForwardVector(), FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
-		DrawDebugSphere(GetWorld(), HitLocation, 400.f, 32, FColor::Cyan, false, 1.f);
+		SphereTraceImpact(EndLocation);
+	}
+}
 
-		for (FHitResult hit : HitResults)
+void AMainCharacter::SphereTraceImpact(FVector vector)
+{
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(400.f) };
+	TArray<FHitResult> HitResults;
+	FCollisionQueryParams SphereParams = FCollisionQueryParams();
+	FVector HitLocation = vector;
+	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, GetActorForwardVector(), FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
+	DrawDebugSphere(GetWorld(), HitLocation, 400.f, 32, FColor::Cyan, false, 1.f);
+
+	for (FHitResult hit : HitResults)
+	{
+
+		if (hit.GetActor() != this)
 		{
-			if (hit.GetActor() != this)
+
+			FVector SphereHit = hit.ImpactPoint * 100.f;
+			if (hit.GetComponent()->IsSimulatingPhysics())
 			{
-				FVector SphereHit = StartVector + hit.Location*100.f;
-				if (hit.GetComponent()->IsSimulatingPhysics())
-				{
-					hit.GetComponent()->AddImpulse(SphereHit);
-				}
-				//hit.GetActor()->
+				hit.GetComponent()->AddImpulse(SphereHit);
 			}
+
 		}
+		OnAbilityApplyDelegate.Broadcast(hit);
+
 	}
 }
 

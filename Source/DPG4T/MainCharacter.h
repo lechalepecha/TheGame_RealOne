@@ -119,6 +119,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ForcePushAbility();
+
+	void SphereTraceImpact(FVector vector);
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SliceDachAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
