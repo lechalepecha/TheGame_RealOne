@@ -845,7 +845,7 @@ void AMainCharacter::ForcePushAbility()
 {
 	FVector StartVector = FirstPersonCameraComponent->GetComponentLocation();
 	FVector End = FirstPersonCameraComponent->GetForwardVector();// * 150.f;
-	FVector EndLocation = StartVector + End * 500.f;
+	FVector EndLocation = StartVector + End * 300.f;
 
 	FCollisionQueryParams params = FCollisionQueryParams();
 	params.AddIgnoredActor(this);
@@ -866,12 +866,12 @@ void AMainCharacter::ForcePushAbility()
 
 void AMainCharacter::SphereTraceImpact(FVector vector)
 {
-	FCollisionShape Sphere{ FCollisionShape::MakeSphere(400.f) };
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(250.f) };
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams SphereParams = FCollisionQueryParams();
 	FVector HitLocation = vector;
-	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, GetActorForwardVector(), FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
-	DrawDebugSphere(GetWorld(), HitLocation, 400.f, 32, FColor::Cyan, false, 1.f);
+	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
+	DrawDebugSphere(GetWorld(), HitLocation, 250.f, 32, FColor::Cyan, false, 1.f);
 
 	for (FHitResult hit : HitResults)
 	{
@@ -879,12 +879,22 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 		if (hit.GetActor() != this)
 		{
 
-			FVector SphereHit = hit.ImpactPoint * 100.f;
+			//FVector SphereHit =hit.ImpactPoint * 10.f;
 			if (hit.GetComponent()->IsSimulatingPhysics())
 			{
-				hit.GetComponent()->AddImpulse(SphereHit);
+				FVector Impulse = hit.Location - GetActorLocation();
+				hit.GetComponent()->AddImpulse(Impulse*500.f);
 			}
 
+		}
+		else
+		{
+			if (hit.GetActor() == this)
+			{
+				FVector Impulse = HitLocation - GetActorLocation();
+				FVector NormalizedImp = Impulse.GetSafeNormal();
+				this->LaunchCharacter(NormalizedImp * -1000.f, true, true);
+			}
 		}
 		OnAbilityApplyDelegate.Broadcast(hit);
 
