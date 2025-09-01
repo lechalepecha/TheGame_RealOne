@@ -807,6 +807,55 @@ void AMainCharacter::StandUp()
 	}*/
 }
 
+void AMainCharacter::ChangeAbilityType()
+{
+	if (CurrentSlot != SecondSlotAbility)
+	{
+		CurrentSlot = SecondSlotAbility;
+		CurrentSlotAbilityTimer = &SecondSlotAbilityTimer;
+	}
+	else
+	{
+		CurrentSlot = FirstSlotAbility;
+		CurrentSlotAbilityTimer = &FirstSlotAbilityTimer;
+	}
+	/*
+	if (!IsValid(CurrentWeapon) || GetIsMeleeing())
+	{
+		return;
+	}
+	if (bHasWeapon && CurrentWeapon->GetIsReloading())
+	{
+		CurrentWeapon->CancelReload(0.25f);
+	}
+	if (!CanAct())
+	{
+		GetFPAnimInstance()->SetSprintBlendOutTime(GetFPAnimInstance()->InstantSprintBlendOutTime);
+		//ForceStopSprint();
+	}
+	if (ADSAlpha > 0.f)
+	{
+		//CurrentWeapon->ExitADS(true);
+		CurrentWeapon->ADSTL->SetPlayRate(8.f);
+		CurrentWeapon->ADSTL->Reverse();
+	}
+
+	SetIsMeleeing(true);
+	SetLeftHandIKState(false);
+
+	CurrentWeapon->ForceStopFire();
+	CurrentWeapon->CancelReload(0.25f);
+	GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPMeleeAnimation);
+	FOnMontageBlendingOutStarted BlendOutDelegate;
+	BlendOutDelegate.BindUObject(this, &AMainCharacter::QuickMeleeAnimationBlendOut);
+	GetFPAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDelegate, CurrentWeapon->FPMeleeAnimation);*/
+}
+
+void AMainCharacter::AbilityTimerEnded()
+{
+
+}
+
 void AMainCharacter::HandAbility()
 {
 	/*if (Magneted)
@@ -817,28 +866,36 @@ void AMainCharacter::HandAbility()
 	{
 		GrabObject();
 	}*/
-	switch (CurrentSlot)
+	if (!GetWorld()->GetTimerManager().IsTimerActive(*CurrentSlotAbilityTimer))
 	{
-	case EAbilityType::None:
-		break;
-	case EAbilityType::ForcePush:
-		ForcePushAbility();
-		break;
-	case EAbilityType::SliceDash:
-		SliceDachAbility();
-		break;
-	case EAbilityType::SingleStun:
-		SingleStunAbility();
-		break;
-	case EAbilityType::MegaPunch:
-		MegaPunchAbility();
-		break;
-	default:
-		break;
+		switch (CurrentSlot)
+		{
+		case EAbilityType::None:
+			break;
+		case EAbilityType::ForcePush:
+			ForcePushAbility();
+			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			break;
+		case EAbilityType::SliceDash:
+			SliceDachAbility();
+			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			break;
+		case EAbilityType::SingleStun:
+			SingleStunAbility();
+			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			break;
+		case EAbilityType::MegaPunch:
+			MegaPunchAbility();
+			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			break;
+		default:
+			break;
+		}
 	}
-
-	UE_LOG(LogTemplateCharacter, Error, TEXT("Trying to use ability from curent slot: %s"), *UEnum::GetValueAsString(CurrentSlot));
-
+	else 
+	{
+		return;
+	}
 }
 
 void AMainCharacter::ForcePushAbility()
@@ -894,6 +951,12 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 				FVector Impulse = HitLocation - GetActorLocation();
 				FVector NormalizedImp = Impulse.GetSafeNormal();
 				this->LaunchCharacter(NormalizedImp * -1000.f, true, true);
+				if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
+				{
+					JumpsLeft++;
+					GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
+					CoyoteTimerHandle.Invalidate();
+				}
 			}
 		}
 		OnAbilityApplyDelegate.Broadcast(hit);
@@ -903,14 +966,17 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 
 void AMainCharacter::SliceDachAbility()
 {
+
 }
 
 void AMainCharacter::SingleStunAbility()
 {
+
 }
 
 void AMainCharacter::MegaPunchAbility()
 {
+
 }
 
 void AMainCharacter::ThrowObject()
@@ -934,28 +1000,26 @@ void AMainCharacter::ThrowObject()
 
 void AMainCharacter::GrabObject()
 {
-	FVector Start = FirstPersonCameraComponent->GetComponentLocation(); // Используем позицию камеры
-	// Получаем направление камеры
-	FVector Forward = FirstPersonCameraComponent->GetForwardVector();   // Используем направление камеры
-	// Вычисляем конечную точку трассировки
+	FVector Start = FirstPersonCameraComponent->GetComponentLocation(); 
+	
+	FVector Forward = FirstPersonCameraComponent->GetForwardVector();   
+	
 	FVector TraceEnd = Start + (Forward * 1000.f);
 
-	// Настраиваем параметры коллизии
+
 	FCollisionQueryParams Params = FCollisionQueryParams();
 	Params.AddIgnoredActor(this);
 
-	// Выполняем трассировку
 	FHitResult HitResult;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, TraceEnd, ECC_Visibility, Params);
-	// Отрисовка линии трассировки (для отладки)
+
 	//DrawDebugLine(GetWorld(), Start, TraceEnd, FColor::Blue, false, 5.0f);
 
-	// Обработка попадания
+
 	if (bHit)
 	{
 		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 
-		// Проверяем, что PhysicsHandle инициализирован и объект симулирует физику
 		if (PhysicsHandle && HitComponent->IsSimulatingPhysics())
 		{
 			UE_LOG(LogTemplateCharacter, Error, TEXT("Object is sinulating physics && PhysicsHandle != null"), *HitResult.GetActor()->GetName());
@@ -964,7 +1028,6 @@ void AMainCharacter::GrabObject()
 			Magneted = true;
 		}
 
-		// Логирование для отладки
 		UE_LOG(LogTemplateCharacter, Error, TEXT("Hit an object, trying to grab: %s"), *HitResult.GetActor()->GetName());
 	}
 }
@@ -1807,48 +1870,6 @@ int32 AMainCharacter::SetRemainingAmmo_Implementation(int32 NewValue)
 	default:
 		return 0;
 	}
-}
-
-void AMainCharacter::ChangeAbilityType()
-{
-	if (CurrentSlot != SecondSlotAbility)
-	{
-		CurrentSlot = SecondSlotAbility;
-	}
-	else
-	{
-		CurrentSlot = FirstSlotAbility;
-	}
-	/*
-	if (!IsValid(CurrentWeapon) || GetIsMeleeing())
-	{
-		return;
-	}
-	if (bHasWeapon && CurrentWeapon->GetIsReloading())
-	{
-		CurrentWeapon->CancelReload(0.25f);
-	}
-	if (!CanAct())
-	{
-		GetFPAnimInstance()->SetSprintBlendOutTime(GetFPAnimInstance()->InstantSprintBlendOutTime);
-		//ForceStopSprint();
-	}
-	if (ADSAlpha > 0.f)
-	{
-		//CurrentWeapon->ExitADS(true);
-		CurrentWeapon->ADSTL->SetPlayRate(8.f);
-		CurrentWeapon->ADSTL->Reverse();
-	}
-
-	SetIsMeleeing(true);
-	SetLeftHandIKState(false);
-
-	CurrentWeapon->ForceStopFire();
-	CurrentWeapon->CancelReload(0.25f);
-	GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPMeleeAnimation);
-	FOnMontageBlendingOutStarted BlendOutDelegate;
-	BlendOutDelegate.BindUObject(this, &AMainCharacter::QuickMeleeAnimationBlendOut);
-	GetFPAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDelegate, CurrentWeapon->FPMeleeAnimation);*/
 }
 
 void AMainCharacter::QuickMeleeAnimationBlendOut(UAnimMontage* animMontage, bool bInterrupted)

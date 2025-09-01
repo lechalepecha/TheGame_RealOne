@@ -503,7 +503,7 @@ public:
 	EAbilityType FirstSlotAbility{ EAbilityType::ForcePush };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType SecondSlotAbility{ EAbilityType::None };
+	EAbilityType SecondSlotAbility{ EAbilityType::SingleStun };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EAbilityType CurrentSlot = FirstSlotAbility;
@@ -511,15 +511,17 @@ public:
 	bool CanChangeSlots = false;
 
 
+
 protected:
 
 	/*Hand ability*/
-	FTimerHandle FirstSlotHandAbilityTimer;
+	FTimerHandle FirstSlotAbilityTimer;
 	float FirstSlotRollBack{ 2.f };
-	FTimerHandle SecondSlotHAndAbilityTimer;
+	FTimerHandle SecondSlotAbilityTimer;
 	float SecondSlotRollBack{ 2.f };
 
-
+	FTimerHandle* CurrentSlotAbilityTimer = &FirstSlotAbilityTimer;
+	void AbilityTimerEnded();
 
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
