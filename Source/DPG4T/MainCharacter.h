@@ -263,11 +263,13 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
 	USoundBase* SuccesParryCue = nullptr;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnAbilityApply OnAbilityApplyDelegate;
+
 public:
 	AMainCharacter();
 
-	UPROPERTY(BlueprintAssignable)
-	FOnAbilityApply OnAbilityApplyDelegate;
+
 
 protected:
 	virtual void BeginPlay();
@@ -516,7 +518,7 @@ protected:
 
 	/*Hand ability*/
 	FTimerHandle FirstSlotAbilityTimer;
-	float FirstSlotRollBack{ 2.f };
+	float FirstSlotRollBack{ 1.75f };
 	FTimerHandle SecondSlotAbilityTimer;
 	float SecondSlotRollBack{ 2.f };
 

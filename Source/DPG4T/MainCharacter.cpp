@@ -46,7 +46,7 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 	GetCharacterMovement()->JumpZVelocity = 650.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 200.f;
-	GetCharacterMovement()->AirControl = 0.275f;
+	GetCharacterMovement()->AirControl = 0.75f;
 
 	FP_Root = CreateDefaultSubobject<USceneComponent>(TEXT("FP_Root"));
 	FP_Root->SetupAttachment(GetCapsuleComponent());
@@ -902,7 +902,7 @@ void AMainCharacter::ForcePushAbility()
 {
 	FVector StartVector = FirstPersonCameraComponent->GetComponentLocation();
 	FVector End = FirstPersonCameraComponent->GetForwardVector();// * 150.f;
-	FVector EndLocation = StartVector + End * 300.f;
+	FVector EndLocation = StartVector + End * 400.f;
 
 	FCollisionQueryParams params = FCollisionQueryParams();
 	params.AddIgnoredActor(this);
@@ -923,12 +923,12 @@ void AMainCharacter::ForcePushAbility()
 
 void AMainCharacter::SphereTraceImpact(FVector vector)
 {
-	FCollisionShape Sphere{ FCollisionShape::MakeSphere(250.f) };
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(210.f) };
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams SphereParams = FCollisionQueryParams();
 	FVector HitLocation = vector;
 	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
-	DrawDebugSphere(GetWorld(), HitLocation, 250.f, 32, FColor::Cyan, false, 1.f);
+	DrawDebugSphere(GetWorld(), HitLocation, 210.f, 32, FColor::Cyan, false, 1.f);
 
 	for (FHitResult hit : HitResults)
 	{
@@ -942,7 +942,7 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 				FVector Impulse = hit.Location - GetActorLocation();
 				hit.GetComponent()->AddImpulse(Impulse*500.f);
 			}
-
+			OnAbilityApplyDelegate.Broadcast(hit);
 		}
 		else
 		{
@@ -954,13 +954,13 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 				if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
 				{
 					JumpsLeft++;
+					DashesLeft++;
+					GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed * 1.05f;
 					GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
 					CoyoteTimerHandle.Invalidate();
 				}
 			}
 		}
-		OnAbilityApplyDelegate.Broadcast(hit);
-
 	}
 }
 
@@ -1099,7 +1099,7 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	CoyoteTimerHandle.Invalidate();
 	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
 	SprintTimerHandle.Invalidate();
-
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	MakeNoise(1.f, this, GetActorLocation());
 
 
