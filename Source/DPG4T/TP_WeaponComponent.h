@@ -98,7 +98,7 @@ public:
 	UAnimMontage* FPMoveAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FPMeleeAnimation = nullptr;
+	UAnimMontage* FPPunchAbilityAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FPParryAnimation = nullptr;

@@ -443,7 +443,6 @@ bool AMainCharacter::MantleCheck()
 
 	GetWorld()->SweepSingleByChannel(HitResult, StartLocation, EndLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Capsule, Params); 
 
-	DrawDebugCapsule(GetWorld(), FVector(EndLocation.X, EndLocation.Y, EndLocation.Z), HalfHeight, ForwardTraceRaius, FQuat::Identity, FColor::Red, false, 1.f);
 
 	if (HitResult.bBlockingHit && !HitResult.bStartPenetrating && !GetCharacterMovement()->IsWalkable(HitResult))
 	{
@@ -464,7 +463,6 @@ bool AMainCharacter::MantleCheck()
 	FCollisionShape Sphere{ FCollisionShape::MakeSphere(DownwardTraceRadius) };
 
 	GetWorld()->SweepSingleByChannel(HitResult, EndLocation, StartLocation, FQuat::Identity, ECollisionChannel::ECC_Visibility, Sphere, Params);
-	DrawDebugSphere(GetWorld(), EndLocation, DownwardTraceRadius, 32,  FColor::Blue, false, 100.f);
 
 	if (HitResult.bBlockingHit && GetCharacterMovement()->IsWalkable(HitResult))
 	{
@@ -819,55 +817,19 @@ void AMainCharacter::ChangeAbilityType()
 		CurrentSlot = FirstSlotAbility;
 		CurrentSlotAbilityTimer = &FirstSlotAbilityTimer;
 	}
-	/*
-	if (!IsValid(CurrentWeapon) || GetIsMeleeing())
-	{
-		return;
-	}
-	if (bHasWeapon && CurrentWeapon->GetIsReloading())
-	{
-		CurrentWeapon->CancelReload(0.25f);
-	}
-	if (!CanAct())
-	{
-		GetFPAnimInstance()->SetSprintBlendOutTime(GetFPAnimInstance()->InstantSprintBlendOutTime);
-		//ForceStopSprint();
-	}
-	if (ADSAlpha > 0.f)
-	{
-		//CurrentWeapon->ExitADS(true);
-		CurrentWeapon->ADSTL->SetPlayRate(8.f);
-		CurrentWeapon->ADSTL->Reverse();
-	}
-
-	SetIsMeleeing(true);
-	SetLeftHandIKState(false);
-
-	CurrentWeapon->ForceStopFire();
-	CurrentWeapon->CancelReload(0.25f);
-	GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPMeleeAnimation);
-	FOnMontageBlendingOutStarted BlendOutDelegate;
-	BlendOutDelegate.BindUObject(this, &AMainCharacter::QuickMeleeAnimationBlendOut);
-	GetFPAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDelegate, CurrentWeapon->FPMeleeAnimation);*/
 }
 
 void AMainCharacter::AbilityTimerEnded()
 {
-
+	GetWorld()->GetTimerManager().ClearTimer(*CurrentSlotAbilityTimer);
+	(*CurrentSlotAbilityTimer).Invalidate();
 }
 
 void AMainCharacter::HandAbility()
 {
-	/*if (Magneted)
-	{
-		ThrowObject();
-	}
-	else
-	{
-		GrabObject();
-	}*/
 	if (!GetWorld()->GetTimerManager().IsTimerActive(*CurrentSlotAbilityTimer))
 	{
+		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
 		switch (CurrentSlot)
 		{
 		case EAbilityType::None:
@@ -876,8 +838,8 @@ void AMainCharacter::HandAbility()
 			ForcePushAbility();
 			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
 			break;
-		case EAbilityType::SliceDash:
-			SliceDachAbility();
+		case EAbilityType::LastAbility:
+			TheFourthAbility();
 			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
 			break;
 		case EAbilityType::SingleStun:
@@ -909,7 +871,6 @@ void AMainCharacter::ForcePushAbility()
 	
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_Visibility, params);
-	DrawDebugLine(GetWorld(), StartVector, EndLocation, FColor::Blue, false, 1.f);
 
 	if (HitResult.bBlockingHit)
 	{
@@ -964,72 +925,90 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 	}
 }
 
-void AMainCharacter::SliceDachAbility()
+void AMainCharacter::TheFourthAbility()
 {
 
 }
 
 void AMainCharacter::SingleStunAbility()
 {
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = TraceStart + FirstPersonCameraComponent->GetForwardVector() * 500.f;
+
+	FVector Direction = (TraceStart - TraceEnd).GetSafeNormal();
+	FRotator CapsuleRot = FRotationMatrix::MakeFromZ(Direction).Rotator();
+	FQuat Quat = CapsuleRot.Quaternion();
+
+	FCollisionQueryParams params = FCollisionQueryParams();
+	params.AddIgnoredActor(this);
+	FHitResult HitResult;
+
+	FCollisionShape Capsule { FCollisionShape::MakeCapsule(20.f, FVector::Distance(TraceStart, TraceEnd))};
+	GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, Quat, ECC_EngineTraceChannel2, Capsule, params);
+
+	if (HitResult.bBlockingHit)
+	{
+		OnAbilityApplyDelegate.Broadcast(HitResult);
+	}
 
 }
 
 void AMainCharacter::MegaPunchAbility()
 {
-
-}
-
-void AMainCharacter::ThrowObject()
-{
-	if (Magneted)
+	if (IWeaponWielderInterface::Execute_GetCurrentWeapon(this) != nullptr)
 	{
-
-		UPrimitiveComponent* GrabbedComponent = PhysicsHandle->GrabbedComponent;
-		PhysicsHandle->ReleaseComponent();
-
-
-		FVector ForwardVector = GetActorForwardVector();
-		FVector Impulse = ForwardVector * 10000.f;
-
-		GrabbedComponent->AddImpulse(Impulse, NAME_None, true);
-
-		Magneted = false;
-
+		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPPunchAbilityAnimation, 1.f);
 	}
 }
 
-void AMainCharacter::GrabObject()
+void AMainCharacter::DrawAbilityMelee()
 {
-	FVector Start = FirstPersonCameraComponent->GetComponentLocation(); 
-	
-	FVector Forward = FirstPersonCameraComponent->GetForwardVector();   
-	
-	FVector TraceEnd = Start + (Forward * 1000.f);
-
-
 	FCollisionQueryParams Params = FCollisionQueryParams();
 	Params.AddIgnoredActor(this);
+	Params.bReturnPhysicalMaterial = true;
 
-	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, TraceEnd, ECC_Visibility, Params);
+	FVector MeleeTraceBottom = GetMesh1P()->GetSocketLocation("LeftHand_Socket");
+	float SphereRadius = 20.f;
 
-	//DrawDebugLine(GetWorld(), Start, TraceEnd, FColor::Blue, false, 5.0f);
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(SphereRadius) };
 
+	FHitResult meleeHitResult;
+	GetWorld()->SweepSingleByChannel(
+		meleeHitResult,
+		MeleeTraceBottom,
+		MeleeTraceBottom,
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel1,
+		Sphere,
+		Params
+	);
 
-	if (bHit)
+	OnAbilityApplyDelegate.Broadcast(meleeHitResult);
+
+	if (!ContainsHitResultActor(AbilityTraceResult, meleeHitResult))
 	{
-		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+		AbilityTraceResult.Add(meleeHitResult);
+		//OnPunchAbilityApplyDelegate.Broadcast(AbilityTraceResult);
 
-		if (PhysicsHandle && HitComponent->IsSimulatingPhysics())
-		{
-			UE_LOG(LogTemplateCharacter, Error, TEXT("Object is sinulating physics && PhysicsHandle != null"), *HitResult.GetActor()->GetName());
-
-			PhysicsHandle->GrabComponentAtLocationWithRotation(HitComponent, NAME_None, HitResult.ImpactPoint, HitComponent->GetComponentRotation());
-			Magneted = true;
-		}
-
-		UE_LOG(LogTemplateCharacter, Error, TEXT("Hit an object, trying to grab: %s"), *HitResult.GetActor()->GetName());
 	}
+}
+
+void AMainCharacter::DrawMeleeEnd()
+{
+	OnPunchAbilityApplyDelegate.Broadcast(AbilityTraceResult);
+	AbilityTraceResult.Empty();
+}
+
+bool AMainCharacter::ContainsHitResultActor(const TArray<FHitResult>& HitResults, const FHitResult& TargetHit)
+{
+	for (const FHitResult& Hit : HitResults)
+	{
+		if (Hit.GetComponent() == TargetHit.GetComponent() || Hit.GetActor() == TargetHit.GetActor())
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void AMainCharacter::Move(const FInputActionValue& Value)
@@ -1636,7 +1615,7 @@ void AMainCharacter::PressedFire()
 
 		if (IWeaponWielderInterface::Execute_GetRemainingAmmo(this) > 0)
 		{
-			IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->Reload();
+			//IWeaponWielderInterface::Execute_GetCurrentWeapon(this)->Reload();
 			return;
 		}
 		return;

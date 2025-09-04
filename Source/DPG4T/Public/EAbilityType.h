@@ -13,7 +13,7 @@ enum class EAbilityType : uint8
 {
 	None,
 	ForcePush,
-	SliceDash,
+	LastAbility,
 	SingleStun,
 	MegaPunch
 };

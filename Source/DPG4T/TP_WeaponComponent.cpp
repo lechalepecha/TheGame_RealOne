@@ -575,14 +575,13 @@ void UTP_WeaponComponent::DrawMelee()
 
 void UTP_WeaponComponent::DrawMeleeEnd()
 {
-	if(MeleeTraceResult.IsEmpty())
-		UE_LOG(LogTemp, Error, TEXT("MeleeTraceResult is Empty!!!!!!!!!!!!!!"));
-
 	OnMeleeWeaponHitScanDelegate.Broadcast(MeleeTraceResult);
 	
 	IWeaponWielderInterface::Execute_OnWeaponFired(WeaponWielder);
 	MeleeTraceResult.Empty();
 }
+
+
 
 void UTP_WeaponComponent::ParryMelee()
 {
@@ -845,9 +844,8 @@ bool UTP_WeaponComponent::ContainsHitResultActor(const TArray<FHitResult>& HitRe
 {
 	for (const FHitResult& Hit : HitResults)
 	{
-		// Сравниваем ключевые поля (можно добавить другие, если нужно)
 		if (Hit.GetComponent() == TargetHit.GetComponent() ||
-			Hit.GetActor() == TargetHit.GetActor()) // Допуск для сравнения float
+			Hit.GetActor() == TargetHit.GetActor())
 		{
 			return true;
 		}

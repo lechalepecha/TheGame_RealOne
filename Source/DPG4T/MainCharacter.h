@@ -29,6 +29,7 @@ class UPawnNoiseEmitterComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilityApply, FHitResult, HitResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPunchAbilityApply, TArray<FHitResult>, HitResults);
 
 
 UCLASS(config = Game)
@@ -123,11 +124,14 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void SphereTraceImpact(FVector vector);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SliceDachAbility();
+	void TheFourthAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SingleStunAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void MegaPunchAbility();
+
+
+	bool ContainsHitResultActor(const TArray<FHitResult>& HitResults, const FHitResult& TargetHit);
 
 
 	//UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -243,6 +247,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void SprintTLCallback(float val);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
+	USoundBase* AbilityCue = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
 	USoundBase* FootstepCue = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
@@ -265,6 +272,9 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAbilityApply OnAbilityApplyDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPunchAbilityApply OnPunchAbilityApplyDelegate;
 
 public:
 	AMainCharacter();
@@ -320,6 +330,9 @@ public:
 	void CallMelleTraceDraw();
 	void CallMelleTraceEnd();
 
+	void DrawAbilityMelee();
+
+	void DrawMeleeEnd();
 
 	void PressedReload();
 
@@ -380,12 +393,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool ADSing;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
-	UAnimMontage* ParryAnimation = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
-	UAnimMontage* ParryToIdleAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Action)
 	UAnimMontage* DefaultTPMeleeAnimation = nullptr;
@@ -505,18 +512,21 @@ public:
 	EAbilityType FirstSlotAbility{ EAbilityType::ForcePush };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType SecondSlotAbility{ EAbilityType::SingleStun };
+	EAbilityType SecondSlotAbility{ EAbilityType::MegaPunch };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EAbilityType CurrentSlot = FirstSlotAbility;
 
 	bool CanChangeSlots = false;
 
+	TArray<FHitResult> AbilityTraceResult;
 
 
 protected:
 
 	/*Hand ability*/
+
+
 	FTimerHandle FirstSlotAbilityTimer;
 	float FirstSlotRollBack{ 1.75f };
 	FTimerHandle SecondSlotAbilityTimer;
@@ -574,9 +584,6 @@ protected:
 	bool tryMantle;
 
 	void HandAbility ();
-	void ThrowObject();
-	void GrabObject();
-	bool Magneted = false;
 
 	void CustomCrouch(); // it's called CustomCrouch because Crouch is already provided from ACharacter
 	void ReleaseCrouch();
