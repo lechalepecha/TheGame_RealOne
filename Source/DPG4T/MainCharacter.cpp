@@ -983,19 +983,19 @@ void AMainCharacter::DrawAbilityMelee()
 		Params
 	);
 
-	OnAbilityApplyDelegate.Broadcast(meleeHitResult);
-
 	if (!ContainsHitResultActor(AbilityTraceResult, meleeHitResult))
 	{
 		AbilityTraceResult.Add(meleeHitResult);
-		//OnPunchAbilityApplyDelegate.Broadcast(AbilityTraceResult);
 
 	}
 }
 
 void AMainCharacter::DrawMeleeEnd()
 {
-	OnPunchAbilityApplyDelegate.Broadcast(AbilityTraceResult);
+	for (FHitResult HitResult : AbilityTraceResult)
+	{
+		OnAbilityApplyDelegate.Broadcast(HitResult);
+	}
 	AbilityTraceResult.Empty();
 }
 

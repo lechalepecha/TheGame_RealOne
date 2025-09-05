@@ -29,7 +29,6 @@ class UPawnNoiseEmitterComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilityApply, FHitResult, HitResult);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPunchAbilityApply, TArray<FHitResult>, HitResults);
 
 
 UCLASS(config = Game)
@@ -273,8 +272,6 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(BlueprintAssignable)
 	FOnAbilityApply OnAbilityApplyDelegate;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnPunchAbilityApply OnPunchAbilityApplyDelegate;
 
 public:
 	AMainCharacter();
