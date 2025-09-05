@@ -81,7 +81,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* QuickMeleeAction = nullptr;
+	UInputAction* ChangeAbilityAction = nullptr;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -94,7 +94,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	class UInputAction* InteractAction = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MagnetAction = nullptr;
+	class UInputAction* AbilityAction = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SprintAction = nullptr;

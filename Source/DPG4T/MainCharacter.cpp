@@ -341,8 +341,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMainCharacter::StartDash);
 
 		// arm input
-		EnhancedInputComponent->BindAction(MagnetAction, ETriggerEvent::Started, this, &AMainCharacter::HandAbility);
-		EnhancedInputComponent->BindAction(QuickMeleeAction, ETriggerEvent::Started, this, &AMainCharacter::ChangeAbilityType);
+		EnhancedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AMainCharacter::HandAbility);
+		EnhancedInputComponent->BindAction(ChangeAbilityAction, ETriggerEvent::Started, this, &AMainCharacter::ChangeAbilityType);
 	}
 	else
 	{
