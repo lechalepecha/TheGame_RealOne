@@ -341,8 +341,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMainCharacter::StartDash);
 
 		// arm input
-		EnhancedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AMainCharacter::HandAbility);
-		EnhancedInputComponent->BindAction(ChangeAbilityAction, ETriggerEvent::Started, this, &AMainCharacter::ChangeAbilityType);
+		EnhancedInputComponent->BindAction(AbilityAction_FirstSlot, ETriggerEvent::Triggered, this, &AMainCharacter::HandAbility_FirstSlot);
+		EnhancedInputComponent->BindAction(AbilityAction_SecondSlot, ETriggerEvent::Triggered, this, &AMainCharacter::HandAbility_SecondSlot);
 	}
 	else
 	{
@@ -805,56 +805,87 @@ void AMainCharacter::StandUp()
 	}*/
 }
 
-void AMainCharacter::ChangeAbilityType()
+void AMainCharacter::FirstAbilityTimerEnded()
 {
-	if (CurrentSlot != SecondSlotAbility)
-	{
-		CurrentSlot = SecondSlotAbility;
-		CurrentSlotAbilityTimer = &SecondSlotAbilityTimer;
-	}
-	else
-	{
-		CurrentSlot = FirstSlotAbility;
-		CurrentSlotAbilityTimer = &FirstSlotAbilityTimer;
-	}
+	GetWorld()->GetTimerManager().ClearTimer(FirstSlotAbilityTimer);
+	(FirstSlotAbilityTimer).Invalidate();
 }
 
-void AMainCharacter::AbilityTimerEnded()
+void AMainCharacter::SecondAbilityTimerEnded()
 {
-	GetWorld()->GetTimerManager().ClearTimer(*CurrentSlotAbilityTimer);
-	(*CurrentSlotAbilityTimer).Invalidate();
+	GetWorld()->GetTimerManager().ClearTimer(SecondSlotAbilityTimer);
+	(SecondSlotAbilityTimer).Invalidate();
 }
 
-void AMainCharacter::HandAbility()
+void AMainCharacter::HandAbility_FirstSlot()
 {
-	if (!GetWorld()->GetTimerManager().IsTimerActive(*CurrentSlotAbilityTimer))
+	if (!GetWorld()->GetTimerManager().IsTimerActive(FirstSlotAbilityTimer) && !isAbilityActive)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
-		switch (CurrentSlot)
+		CurrentSlot = FirstSlotAbility;
+
+		switch (FirstSlotAbility)
 		{
 		case EAbilityType::None:
 			break;
 		case EAbilityType::ForcePush:
 			ForcePushAbility();
-			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
 			break;
 		case EAbilityType::LastAbility:
 			TheFourthAbility();
-			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
 			break;
 		case EAbilityType::SingleStun:
 			SingleStunAbility();
-			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
 			break;
 		case EAbilityType::MegaPunch:
 			MegaPunchAbility();
-			GetWorldTimerManager().SetTimer(*CurrentSlotAbilityTimer, this, &AMainCharacter::AbilityTimerEnded, FirstSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
 			break;
 		default:
 			break;
 		}
 	}
 	else 
+	{
+		return;
+	}
+}
+
+void AMainCharacter::HandAbility_SecondSlot()
+{
+	if (!GetWorld()->GetTimerManager().IsTimerActive(SecondSlotAbilityTimer) && !isAbilityActive)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
+		CurrentSlot = SecondSlotAbility;
+
+		switch (SecondSlotAbility)
+		{
+		case EAbilityType::None:
+			break;
+		case EAbilityType::ForcePush:
+			ForcePushAbility();
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			break;
+		case EAbilityType::LastAbility:
+			TheFourthAbility();
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			break;
+		case EAbilityType::SingleStun:
+			SingleStunAbility();
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			break;
+		case EAbilityType::MegaPunch:
+			MegaPunchAbility();
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			break;
+		default:
+			break;
+		}
+	}
+	else
 	{
 		return;
 	}

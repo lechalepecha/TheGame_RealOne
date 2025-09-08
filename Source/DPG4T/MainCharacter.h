@@ -79,10 +79,6 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction = nullptr;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ChangeAbilityAction = nullptr;
-
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction = nullptr;
@@ -93,8 +89,12 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InteractAction = nullptr;
 
+	/** Ability Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* AbilityAction = nullptr;
+	UInputAction* AbilityAction_SecondSlot = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AbilityAction_FirstSlot = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SprintAction = nullptr;
@@ -113,9 +113,6 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SwitchToNextWeaponAction = nullptr;
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ChangeAbilityType();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ForcePushAbility();
@@ -512,7 +509,7 @@ public:
 	EAbilityType SecondSlotAbility{ EAbilityType::MegaPunch };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType CurrentSlot = FirstSlotAbility;
+	EAbilityType CurrentSlot{ EAbilityType::None };
 
 	bool CanChangeSlots = false;
 
@@ -523,14 +520,17 @@ protected:
 
 	/*Hand ability*/
 
-
 	FTimerHandle FirstSlotAbilityTimer;
-	float FirstSlotRollBack{ 1.75f };
+	float FirstSlotRollBack{ 2.f };
 	FTimerHandle SecondSlotAbilityTimer;
 	float SecondSlotRollBack{ 2.f };
 
-	FTimerHandle* CurrentSlotAbilityTimer = &FirstSlotAbilityTimer;
-	void AbilityTimerEnded();
+	void FirstAbilityTimerEnded();
+	void SecondAbilityTimerEnded();
+
+	void HandAbility_FirstSlot();
+	void HandAbility_SecondSlot();
+	bool isAbilityActive{ false };
 
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
@@ -580,7 +580,6 @@ protected:
 	FTransform MantleTarget;
 	bool tryMantle;
 
-	void HandAbility ();
 
 	void CustomCrouch(); // it's called CustomCrouch because Crouch is already provided from ACharacter
 	void ReleaseCrouch();
