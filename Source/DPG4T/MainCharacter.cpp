@@ -822,27 +822,26 @@ void AMainCharacter::HandAbility_FirstSlot()
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FirstSlotAbilityTimer) && !isAbilityActive)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
-		CurrentSlot = FirstSlotAbility;
-
-		switch (FirstSlotAbility)
+		CurrentAbility = AbilityFirst;
+		switch (AbilityFirst.AbilityType)
 		{
 		case EAbilityType::None:
 			break;
 		case EAbilityType::ForcePush:
 			ForcePushAbility();
-			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		case EAbilityType::LastAbility:
 			TheFourthAbility();
-			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		case EAbilityType::SingleStun:
 			SingleStunAbility();
-			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		case EAbilityType::MegaPunch:
 			MegaPunchAbility();
-			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		default:
 			break;
@@ -859,27 +858,28 @@ void AMainCharacter::HandAbility_SecondSlot()
 	if (!GetWorld()->GetTimerManager().IsTimerActive(SecondSlotAbilityTimer) && !isAbilityActive)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
-		CurrentSlot = SecondSlotAbility;
+		//needed for blueprint
+		CurrentAbility = AbilitySecond;
 
-		switch (SecondSlotAbility)
+		switch (AbilitySecond.AbilityType)
 		{
 		case EAbilityType::None:
 			break;
 		case EAbilityType::ForcePush:
 			ForcePushAbility();
-			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		case EAbilityType::LastAbility:
 			TheFourthAbility();
-			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		case EAbilityType::SingleStun:
 			SingleStunAbility();
-			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		case EAbilityType::MegaPunch:
 			MegaPunchAbility();
-			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, SecondSlotRollBack);
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		default:
 			break;

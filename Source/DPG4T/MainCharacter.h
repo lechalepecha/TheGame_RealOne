@@ -11,6 +11,7 @@
 #include "Camera/CameraComponent.h"
 #include "Weapon/WeaponWielderInterface.h"
 #include "EAbilityType.h"
+#include "AbilityData.h"
 #include "MainCharacter.generated.h"
 
 
@@ -500,18 +501,29 @@ public:
 
 
 	/*Ability slots*/
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FAbilityData AbilityFirst{
+	/*Ability Type*/	EAbilityType::MegaPunch,
+	/*Ability Mesh*/	nullptr,
+	/*Ability Mesh Socket*/	"Lowerarm_L",
+	/*Ability Damage*/	75.f,
+	/*Ability Rollback Timer*/	2.f,
+	/*Ability Duration Timer*/	0.f
+	};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FAbilityData AbilitySecond{
+		/*Ability Type*/	EAbilityType::ForcePush,
+		/*Ability Mesh*	*/  nullptr,
+		/*Ability Mesh Socket*/	"Hand_L",
+		/*Ability Damage*/	0.f,
+		/*Ability Rollback Timer*/	1.75f,
+		/*Ability Duration Timer*/	0.f
+	};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType FirstSlotAbility{ EAbilityType::ForcePush };
+	FAbilityData CurrentAbility;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType SecondSlotAbility{ EAbilityType::MegaPunch };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EAbilityType CurrentSlot{ EAbilityType::None };
-
-	bool CanChangeSlots = false;
+	bool CanChangeAbility = false;
 
 	TArray<FHitResult> AbilityTraceResult;
 
@@ -519,11 +531,8 @@ public:
 protected:
 
 	/*Hand ability*/
-
 	FTimerHandle FirstSlotAbilityTimer;
-	float FirstSlotRollBack{ 2.f };
 	FTimerHandle SecondSlotAbilityTimer;
-	float SecondSlotRollBack{ 2.f };
 
 	void FirstAbilityTimerEnded();
 	void SecondAbilityTimerEnded();
@@ -532,6 +541,7 @@ protected:
 	void HandAbility_SecondSlot();
 	bool isAbilityActive{ false };
 
+	/*Crouch ability*/
 	FTimerHandle UnCrouchTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	float CrouchAlpha;
@@ -540,13 +550,9 @@ protected:
 	float CrouchHeight{ 55.f };
 	bool CrouchKeyHeld;
 
-
+	/*Dash ability*/
 	FTimerHandle DashRollbackHandle;
 	FTimerHandle DashTime;
-
-	FTimerHandle ParryTime;
-	bool isParryingActive;
-
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	FVector LastVelocity;
@@ -558,11 +564,16 @@ protected:
 	int32 DashesLeft{ 2 };
 	int32 DashesMax{ 2 };
 
-	int32 CurrentMeleeAnim{ 0 };
-
 	void StartDash();
 	void EndDash();
 	void DashRollbackEnded();
+
+	/*Parry ability*/
+	FTimerHandle ParryTime;
+	bool isParryingActive;
+
+	int32 CurrentMeleeAnim{ 0 };
+
 
 	void GetPlayerMovementInput();
 	FVector GetCapsuleBaseLocation(float ZOffset);
@@ -589,13 +600,9 @@ protected:
 	void UpdatePlayerCapsuleHeight();
 	void StandUp();
 
-
-
 	FTimerHandle CoyoteTimerHandle;
 	void CoyoteTimePassed();
 	float CoyoteTime{ 0.35f };
-
-
 
 	void Dip(float Speed = 1.f, float Strength = 1.f);
 	float DipStrength{ 1.f };
@@ -686,8 +693,6 @@ private:
 	bool CanSprint = true;
 	bool Sprinting = false;
 	void OnSprintTimerEnd();
-
-
 
 	int32 JumpsLeft{ 2 };
 	int32 JumpsMax{ 2 };

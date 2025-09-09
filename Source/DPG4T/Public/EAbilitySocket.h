@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "EAbilityType.generated.h"
+#include "EAbilitySocket.generated.h"
+
 /**
  * 
  */
 UENUM(BlueprintType)
-enum class EAbilityType : uint8
+enum class EAbilitySocket : uint8
 {
 	None,
-	ForcePush,
-	SingleStun,
-	MegaPunch,
-	LastAbility
+	FirstUpdate,
+	SecondUpdate
+	
 };
