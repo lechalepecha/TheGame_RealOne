@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "EAbilitySocket.h"
 #include "EAbilityType.h"
 #include "AbilityData.generated.h"
 

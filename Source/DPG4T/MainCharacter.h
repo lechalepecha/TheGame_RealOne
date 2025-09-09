@@ -512,12 +512,12 @@ public:
 	};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FAbilityData AbilitySecond{
-		/*Ability Type*/	EAbilityType::ForcePush,
-		/*Ability Mesh*	*/  nullptr,
-		/*Ability Mesh Socket*/	"Hand_L",
-		/*Ability Damage*/	0.f,
-		/*Ability Rollback Timer*/	1.75f,
-		/*Ability Duration Timer*/	0.f
+	/*Ability Type*/	EAbilityType::ForcePush,
+	/*Ability Mesh*	*/  nullptr,
+	/*Ability Mesh Socket*/	"Hand_L",
+	/*Ability Damage*/	0.f,
+	/*Ability Rollback Timer*/	1.75f,
+	/*Ability Duration Timer*/	0.f
 	};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
