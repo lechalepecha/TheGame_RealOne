@@ -30,6 +30,9 @@ struct FAbilityData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AbilityDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText AbilityDescription;
 };
 
 UCLASS(BlueprintType)
