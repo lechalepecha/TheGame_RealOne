@@ -36,9 +36,10 @@ struct FAbilityData {
 };
 
 UCLASS(BlueprintType)
-class DPG4T_API UAbilityAsset : public UDataAsset {
+class DPG4T_API UAbilityAsset : public UPrimaryDataAsset {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
-	TArray<FAbilityData> AbilityDataItems;
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FAbilityData AbilityDataItems;
 };

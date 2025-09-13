@@ -901,7 +901,7 @@ void AMainCharacter::ForcePushAbility()
 	params.AddIgnoredActor(this);
 	
 	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_Visibility, params);
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
 
 	if (HitResult.bBlockingHit)
 	{
@@ -975,8 +975,8 @@ void AMainCharacter::SingleStunAbility()
 	FHitResult HitResult;
 
 	FCollisionShape Capsule { FCollisionShape::MakeCapsule(20.f, FVector::Distance(TraceStart, TraceEnd))};
-	GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, Quat, ECC_EngineTraceChannel2, Capsule, params);
-
+	GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, Quat, ECC_GameTraceChannel1, Capsule, params);
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Blue, false, 5.f);
 	if (HitResult.bBlockingHit)
 	{
 		OnAbilityApplyDelegate.Broadcast(HitResult);

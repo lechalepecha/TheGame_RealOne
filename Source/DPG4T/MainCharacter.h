@@ -508,16 +508,18 @@ public:
 	/*Ability Mesh Socket*/	"Lowerarm_L",
 	/*Ability Damage*/	75.f,
 	/*Ability Rollback Timer*/	2.f,
-	/*Ability Duration Timer*/	0.f
+	/*Ability Duration Timer*/	0.f,
+	/*Ability Description*/   FText::FromString("sdfsldsdfbjksdbfskjdfbsdkjbsdkfjbsdkjfsdf")
 	};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FAbilityData AbilitySecond{
-	/*Ability Type*/	EAbilityType::ForcePush,
-	/*Ability Mesh*	*/  nullptr,
-	/*Ability Mesh Socket*/	"Hand_L",
-	/*Ability Damage*/	0.f,
-	/*Ability Rollback Timer*/	1.75f,
-	/*Ability Duration Timer*/	0.f
+		/*Ability Type*/	EAbilityType::ForcePush,
+		/*Ability Mesh*	*/  nullptr,
+		/*Ability Mesh Socket*/	"Hand_L",
+		/*Ability Damage*/	0.f,
+		/*Ability Rollback Timer*/	1.75f,
+		/*Ability Duration Timer*/	0.f,
+		/*Ability Description*/  FText::FromString("sdfsldsdfbjksdbfskjdfbsdkjbsdkfjbsdkjfsdf")
 	};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
