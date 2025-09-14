@@ -822,6 +822,7 @@ void AMainCharacter::HandAbility_FirstSlot()
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FirstSlotAbilityTimer) && !isAbilityActive)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
+		//identification of using ability
 		CurrentAbility = AbilityFirst;
 		switch (AbilityFirst.AbilityType)
 		{
@@ -858,7 +859,7 @@ void AMainCharacter::HandAbility_SecondSlot()
 	if (!GetWorld()->GetTimerManager().IsTimerActive(SecondSlotAbilityTimer) && !isAbilityActive)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AbilityCue, GetActorLocation());
-		//needed for blueprint
+		//identification of using ability
 		CurrentAbility = AbilitySecond;
 
 		switch (AbilitySecond.AbilityType)
@@ -901,7 +902,7 @@ void AMainCharacter::ForcePushAbility()
 	params.AddIgnoredActor(this);
 	
 	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel2, params);
 
 	if (HitResult.bBlockingHit)
 	{
@@ -942,7 +943,7 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 			{
 				FVector Impulse = HitLocation - GetActorLocation();
 				FVector NormalizedImp = Impulse.GetSafeNormal();
-				this->LaunchCharacter(NormalizedImp * -1000.f, true, true);
+				this->LaunchCharacter(NormalizedImp * -2000.f, true, true);
 				if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
 				{
 					JumpsLeft++;
@@ -976,7 +977,6 @@ void AMainCharacter::SingleStunAbility()
 
 	FCollisionShape Capsule { FCollisionShape::MakeCapsule(20.f, FVector::Distance(TraceStart, TraceEnd))};
 	GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, Quat, ECC_GameTraceChannel1, Capsule, params);
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Blue, false, 5.f);
 	if (HitResult.bBlockingHit)
 	{
 		OnAbilityApplyDelegate.Broadcast(HitResult);
