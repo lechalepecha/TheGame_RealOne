@@ -910,7 +910,7 @@ void AMainCharacter::ForcePushAbility()
 	params.AddIgnoredActor(this);
 	
 	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel2, params);
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
 
 	if (HitResult.bBlockingHit)
 	{
@@ -928,7 +928,7 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams SphereParams = FCollisionQueryParams();
 	FVector HitLocation = vector;
-	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel2, Sphere, SphereParams);
+	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
 	DrawDebugSphere(GetWorld(), HitLocation, 210.f, 32, FColor::Cyan, false, 1.f);
 
 	for (FHitResult hit : HitResults)
@@ -975,7 +975,7 @@ void AMainCharacter::FlameAbility()
 	params.AddIgnoredActor(this);
 
 	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel2, params);
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
 
 	if (HitResult.bBlockingHit && FVector::Distance(StartVector, HitResult.ImpactPoint) > 200.f)
 	{
