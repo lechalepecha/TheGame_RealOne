@@ -121,11 +121,13 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void SphereTraceImpact(FVector vector);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void TheFourthAbility();
+	void FlameAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SingleStunAbility();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void MegaPunchAbility();
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void LashAbility();
 
 
 	bool ContainsHitResultActor(const TArray<FHitResult>& HitResults, const FHitResult& TargetHit);

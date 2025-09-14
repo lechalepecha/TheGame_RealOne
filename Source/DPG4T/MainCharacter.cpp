@@ -832,8 +832,8 @@ void AMainCharacter::HandAbility_FirstSlot()
 			ForcePushAbility();
 			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
-		case EAbilityType::LastAbility:
-			TheFourthAbility();
+		case EAbilityType::Flame:
+			FlameAbility();
 			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		case EAbilityType::SingleStun:
@@ -842,6 +842,10 @@ void AMainCharacter::HandAbility_FirstSlot()
 			break;
 		case EAbilityType::MegaPunch:
 			MegaPunchAbility();
+			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
+			break;
+		case EAbilityType::Lash:
+			LashAbility();
 			GetWorldTimerManager().SetTimer(FirstSlotAbilityTimer, this, &AMainCharacter::FirstAbilityTimerEnded, AbilityFirst.AbilityTimerRollBack);
 			break;
 		default:
@@ -870,8 +874,8 @@ void AMainCharacter::HandAbility_SecondSlot()
 			ForcePushAbility();
 			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
-		case EAbilityType::LastAbility:
-			TheFourthAbility();
+		case EAbilityType::Flame:
+			FlameAbility();
 			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		case EAbilityType::SingleStun:
@@ -880,6 +884,10 @@ void AMainCharacter::HandAbility_SecondSlot()
 			break;
 		case EAbilityType::MegaPunch:
 			MegaPunchAbility();
+			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
+			break;
+		case EAbilityType::Lash:
+			LashAbility();
 			GetWorldTimerManager().SetTimer(SecondSlotAbilityTimer, this, &AMainCharacter::SecondAbilityTimerEnded, AbilitySecond.AbilityTimerRollBack);
 			break;
 		default:
@@ -939,11 +947,11 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 		}
 		else
 		{
-			if (hit.GetActor() == this)
+			if (hit.GetActor() == this )
 			{
 				FVector Impulse = HitLocation - GetActorLocation();
 				FVector NormalizedImp = Impulse.GetSafeNormal();
-				this->LaunchCharacter(NormalizedImp * -2000.f, true, true);
+				this->LaunchCharacter(NormalizedImp * -1000.f, true, true);
 				if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
 				{
 					JumpsLeft++;
@@ -957,9 +965,29 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 	}
 }
 
-void AMainCharacter::TheFourthAbility()
+void AMainCharacter::FlameAbility()
 {
+	FVector StartVector = FirstPersonCameraComponent->GetComponentLocation();
+	FVector End = FirstPersonCameraComponent->GetForwardVector();// * 150.f;
+	FVector EndLocation = StartVector + End * 400.f;
 
+	FCollisionQueryParams params = FCollisionQueryParams();
+	params.AddIgnoredActor(this);
+
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel2, params);
+
+	if (HitResult.bBlockingHit && FVector::Distance(StartVector, HitResult.ImpactPoint) > 200.f)
+	{
+		SphereTraceImpact(HitResult.Location);
+		SphereTraceImpact(HitResult.Location * 0.5f);
+	}
+	else
+	{
+		SphereTraceImpact(EndLocation);
+		SphereTraceImpact(EndLocation * 0.5f);
+
+	}
 }
 
 void AMainCharacter::SingleStunAbility()
@@ -989,6 +1017,52 @@ void AMainCharacter::MegaPunchAbility()
 	if (IWeaponWielderInterface::Execute_GetCurrentWeapon(this) != nullptr)
 	{
 		GetFPAnimInstance()->Montage_Play(CurrentWeapon->FPPunchAbilityAnimation, 1.f);
+	}
+}
+
+void AMainCharacter::LashAbility()
+{
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = TraceStart + FirstPersonCameraComponent->GetForwardVector() * 1000.f;
+
+	FCollisionQueryParams params = FCollisionQueryParams();
+	params.AddIgnoredActor(this);
+	FHitResult HitResult;
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_GameTraceChannel1, params);
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 12.f);
+	if (HitResult.bBlockingHit)
+	{
+		OnAbilityApplyDelegate.Broadcast(HitResult);
+
+		CurrentAbility.AbilityType = EAbilityType::LashAOE;
+
+		FVector Direction = (TraceStart - TraceEnd).GetSafeNormal();
+		FRotator CapsuleRot = FRotationMatrix::MakeFromZ(Direction).Rotator();
+		FQuat Quat = CapsuleRot.Quaternion();
+		params.AddIgnoredActor(HitResult.GetActor());
+
+		FCollisionShape Capsule{ FCollisionShape::MakeCapsule(50.f, FVector::Distance(TraceStart, HitResult.Location)) };
+
+		GetWorld()->SweepMultiByChannel(AbilityTraceResult, TraceStart, HitResult.Location, Quat, ECC_GameTraceChannel1, Capsule, params);
+		DrawDebugCapsule(
+			GetWorld(),
+			(TraceStart + HitResult.ImpactPoint) * 0.5f,
+			FVector::Distance(TraceStart, HitResult.ImpactPoint)/2.f,
+			50.f,
+			Quat,
+			FColor::Cyan,
+			false,     
+			12.0f,       
+			0,          
+			1.0f       
+		);
+
+		for (FHitResult hit : AbilityTraceResult)
+		{
+			OnAbilityApplyDelegate.Broadcast(hit);
+		}
+		AbilityTraceResult.Empty();
 	}
 }
 

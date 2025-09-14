@@ -15,5 +15,7 @@ enum class EAbilityType : uint8
 	ForcePush,
 	SingleStun,
 	MegaPunch,
-	LastAbility
+	Flame,
+	Lash,
+	LashAOE
 };
