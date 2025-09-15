@@ -119,6 +119,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void ForcePushAbility();
 
 	void SphereTraceImpact(FVector vector);
+	void SphereTraceImpact(FVector vector, float radius);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void FlameAbility();

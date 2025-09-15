@@ -965,11 +965,29 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 	}
 }
 
+void AMainCharacter::SphereTraceImpact(FVector vector, float radius)
+{
+	FCollisionShape Sphere{ FCollisionShape::MakeSphere(radius) };
+	TArray<FHitResult> HitResults;
+	FCollisionQueryParams SphereParams = FCollisionQueryParams();
+	SphereParams.AddIgnoredActor(this);
+	FVector HitLocation = vector;
+	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
+	DrawDebugSphere(GetWorld(), HitLocation, radius, 32, FColor::Green, false, 10.f);
+
+	for (FHitResult hit : HitResults)
+	{
+		OnAbilityApplyDelegate.Broadcast(hit);
+		
+	}
+}
+
 void AMainCharacter::FlameAbility()
 {
 	FVector StartVector = FirstPersonCameraComponent->GetComponentLocation();
 	FVector End = FirstPersonCameraComponent->GetForwardVector();// * 150.f;
 	FVector EndLocation = StartVector + End * 400.f;
+	FVector EndLocationClose = StartVector + End * 200.f;
 
 	FCollisionQueryParams params = FCollisionQueryParams();
 	params.AddIgnoredActor(this);
@@ -977,15 +995,19 @@ void AMainCharacter::FlameAbility()
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
 
+	float SphereRadius = 120.f;
+
+
 	if (HitResult.bBlockingHit && FVector::Distance(StartVector, HitResult.ImpactPoint) > 200.f)
 	{
-		SphereTraceImpact(HitResult.Location);
-		SphereTraceImpact(HitResult.Location * 0.5f);
+		
+		SphereTraceImpact(HitResult.Location, SphereRadius);
 	}
 	else
 	{
-		SphereTraceImpact(EndLocation);
-		SphereTraceImpact(EndLocation * 0.5f);
+		SphereTraceImpact(EndLocation, SphereRadius);
+		SphereTraceImpact(EndLocationClose, SphereRadius-20.f);
+
 
 	}
 }
