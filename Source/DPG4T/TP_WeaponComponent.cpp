@@ -554,7 +554,6 @@ void UTP_WeaponComponent::DrawMelee()
 	FQuat Quat = Rotation.Quaternion();
 
 	FCollisionShape Capsule{ FCollisionShape::MakeCapsule(SphereRadius, FVector::Distance(MeleeTraceBottom, MeleeTraceTop)*0.5f)};
-
 	FHitResult meleeHitResult;
 	GetWorld()->SweepSingleByChannel(
 		meleeHitResult,

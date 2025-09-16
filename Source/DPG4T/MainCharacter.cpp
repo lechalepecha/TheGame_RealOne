@@ -965,17 +965,18 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 	}
 }
 
-void AMainCharacter::SphereTraceImpact(FVector vector, float radius)
+TArray<FHitResult> AMainCharacter::SphereTraceImpact(FVector vector, float radius)
 {
 	FCollisionShape Sphere{ FCollisionShape::MakeSphere(radius) };
-	FHitResult HitResults;
+	TArray<FHitResult> HitResults;
 	FCollisionQueryParams SphereParams = FCollisionQueryParams();
 	SphereParams.AddIgnoredActor(this);
 	FVector HitLocation = vector;
-	GetWorld()->SweepSingleByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
+	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
 	DrawDebugSphere(GetWorld(), HitLocation, radius, 32, FColor::Green, false, 10.f);
 	
-	OnAbilityApplyDelegate.Broadcast(HitResults);
+	return HitResults;
+	//OnAbilityApplyDelegate.Broadcast(HitResults);
 }
 
 void AMainCharacter::FlameAbility()
@@ -991,20 +992,29 @@ void AMainCharacter::FlameAbility()
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult, StartVector, EndLocation, ECC_GameTraceChannel1, params);
 
-	float SphereRadius = 120.f;
+	float SphereRadius = 150.f;
 
-
+	TArray<FHitResult> SphereResults;
 	if (HitResult.bBlockingHit && FVector::Distance(StartVector, HitResult.ImpactPoint) > 200.f)
 	{
 		
-		SphereTraceImpact(HitResult.Location, SphereRadius);
+		SphereResults += SphereTraceImpact(HitResult.Location, SphereRadius);
 	}
 	else
 	{
-		SphereTraceImpact(EndLocation, SphereRadius);
-		SphereTraceImpact(EndLocationClose, SphereRadius-20.f);
+		SphereResults += SphereTraceImpact(EndLocation, SphereRadius);
+		SphereResults += SphereTraceImpact(EndLocationClose, SphereRadius-50.f);
 
-
+	}
+	
+	for (FHitResult hit : SphereResults)
+	{
+		if (!ContainsHitResultActor(AbilityTraceResult, hit))
+			AbilityTraceResult.Add(hit);
+	}
+	for (FHitResult hit : AbilityTraceResult)
+	{
+		OnAbilityApplyDelegate.Broadcast(hit);
 	}
 }
 
