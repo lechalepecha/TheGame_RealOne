@@ -968,18 +968,14 @@ void AMainCharacter::SphereTraceImpact(FVector vector)
 void AMainCharacter::SphereTraceImpact(FVector vector, float radius)
 {
 	FCollisionShape Sphere{ FCollisionShape::MakeSphere(radius) };
-	TArray<FHitResult> HitResults;
+	FHitResult HitResults;
 	FCollisionQueryParams SphereParams = FCollisionQueryParams();
 	SphereParams.AddIgnoredActor(this);
 	FVector HitLocation = vector;
-	GetWorld()->SweepMultiByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
+	GetWorld()->SweepSingleByChannel(HitResults, HitLocation, HitLocation, FQuat::Identity, ECC_GameTraceChannel1, Sphere, SphereParams);
 	DrawDebugSphere(GetWorld(), HitLocation, radius, 32, FColor::Green, false, 10.f);
-
-	for (FHitResult hit : HitResults)
-	{
-		OnAbilityApplyDelegate.Broadcast(hit);
-		
-	}
+	
+	OnAbilityApplyDelegate.Broadcast(HitResults);
 }
 
 void AMainCharacter::FlameAbility()
