@@ -480,6 +480,9 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	FVector CalculateLashVelocity(FHitResult hit);
+	float OvershootYAxis{ 100.f };
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
 	virtual void Landed(const FHitResult& Hit) override;

@@ -1051,7 +1051,7 @@ void AMainCharacter::MegaPunchAbility()
 void AMainCharacter::LashAbility()
 {
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
-	FVector TraceEnd = TraceStart + FirstPersonCameraComponent->GetForwardVector() * 1000.f;
+	FVector TraceEnd = TraceStart + FirstPersonCameraComponent->GetForwardVector() * 2000.f;
 
 	FCollisionQueryParams params = FCollisionQueryParams();
 	params.AddIgnoredActor(this);
@@ -1061,37 +1061,68 @@ void AMainCharacter::LashAbility()
 	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 12.f);
 	if (HitResult.bBlockingHit)
 	{
-		OnAbilityApplyDelegate.Broadcast(HitResult);
-
-		CurrentAbility.AbilityType = EAbilityType::LashAOE;
-
-		FVector Direction = (TraceStart - TraceEnd).GetSafeNormal();
-		FRotator CapsuleRot = FRotationMatrix::MakeFromZ(Direction).Rotator();
-		FQuat Quat = CapsuleRot.Quaternion();
-		params.AddIgnoredActor(HitResult.GetActor());
-
-		FCollisionShape Capsule{ FCollisionShape::MakeCapsule(50.f, FVector::Distance(TraceStart, HitResult.Location)) };
-
-		GetWorld()->SweepMultiByChannel(AbilityTraceResult, TraceStart, HitResult.Location, Quat, ECC_GameTraceChannel1, Capsule, params);
-		DrawDebugCapsule(
-			GetWorld(),
-			(TraceStart + HitResult.ImpactPoint) * 0.5f,
-			FVector::Distance(TraceStart, HitResult.ImpactPoint)/2.f,
-			50.f,
-			Quat,
-			FColor::Cyan,
-			false,     
-			12.0f,       
-			0,          
-			1.0f       
-		);
-
-		for (FHitResult hit : AbilityTraceResult)
+		if (!HitResult.GetActor()->IsA(ACharacter::StaticClass()))
 		{
-			OnAbilityApplyDelegate.Broadcast(hit);
+			GetController()->SetIgnoreMoveInput(true);
+			FVector NewVelocity = 100 * CalculateLashVelocity(HitResult);
+			this->LaunchCharacter(NewVelocity, false, false);
+
+			UE_LOG(LogTemp, Warning, TEXT("LashVelocity is: %s"), *NewVelocity.ToString());
+			
+			GetController()->SetIgnoreMoveInput(false);
+
 		}
-		AbilityTraceResult.Empty();
+		else
+		{
+			OnAbilityApplyDelegate.Broadcast(HitResult);
+
+			CurrentAbility.AbilityType = EAbilityType::LashAOE;
+
+			FVector Direction = (TraceStart - TraceEnd).GetSafeNormal();
+			FRotator CapsuleRot = FRotationMatrix::MakeFromZ(Direction).Rotator();
+			FQuat Quat = CapsuleRot.Quaternion();
+			params.AddIgnoredActor(HitResult.GetActor());
+
+			FCollisionShape Capsule{ FCollisionShape::MakeCapsule(50.f, FVector::Distance(TraceStart, HitResult.Location)) };
+
+			GetWorld()->SweepMultiByChannel(AbilityTraceResult, TraceStart, HitResult.Location, Quat, ECC_GameTraceChannel1, Capsule, params);
+			DrawDebugCapsule(
+				GetWorld(),
+				(TraceStart + HitResult.ImpactPoint) * 0.5f,
+				FVector::Distance(TraceStart, HitResult.ImpactPoint) / 2.f,
+				50.f,
+				Quat,
+				FColor::Cyan,
+				false,
+				12.0f,
+				0,
+				1.0f
+			);
+
+			for (FHitResult hit : AbilityTraceResult)
+			{
+				OnAbilityApplyDelegate.Broadcast(hit);
+			}
+			AbilityTraceResult.Empty();
+		}
 	}
+}
+FVector AMainCharacter::CalculateLashVelocity(FHitResult hit)
+{
+	float GravityScale = GetCharacterMovement()->GravityScale;
+	float DisplacementYAxis = hit.Location.Y - GetActorLocation().Y;
+	FVector DisplacementZX = FVector(hit.Location.X - GetActorLocation().X, 0.f, hit.Location.Z - GetActorLocation().Z);
+
+	FVector LowestPoint = FVector(GetActorLocation().X, GetActorLocation().Y - 1.f, GetActorLocation().Z);
+	float LashRelativePos = hit.Location.Y - LowestPoint.Y;
+	float HighestPoint = LashRelativePos + OvershootYAxis;
+
+	FVector VelocityY = FVector(0.f, 1.f, 0) * FMath::Sqrt(2.f * GravityScale * HighestPoint);
+	FVector VelocityXZ = DisplacementZX / (FMath::Sqrt(2.f * HighestPoint / GravityScale) + FMath::Sqrt(-2.f * (DisplacementYAxis - HighestPoint) / GravityScale));
+
+	FVector ResultVel = VelocityXZ + VelocityY;
+
+	return ResultVel;
 }
 
 void AMainCharacter::DrawAbilityMelee()
