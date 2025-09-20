@@ -482,7 +482,7 @@ protected:
 
 
 	FTimerHandle LashdelayTimer;
-	float LashDelayDuration{ 0.1f };
+	float LashDelayDuration{ 0.15f };
 	FHitResult LashHitResult;
 	FVector CalculateLashVelocity(FHitResult hit);
 	void ExecuteLash();
