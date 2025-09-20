@@ -480,7 +480,12 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+
+	FTimerHandle LashdelayTimer;
+	float LashDelayDuration{ 0.1f };
+	FHitResult LashHitResult;
 	FVector CalculateLashVelocity(FHitResult hit);
+	void ExecuteLash();
 	float OvershootYAxis{ 100.f };
 
 protected:

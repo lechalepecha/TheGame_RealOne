@@ -1063,14 +1063,12 @@ void AMainCharacter::LashAbility()
 	{
 		if (!HitResult.GetActor()->IsA(ACharacter::StaticClass()))
 		{
-			GetController()->SetIgnoreMoveInput(true);
-			FVector NewVelocity = 10.f * CalculateLashVelocity(HitResult);
-
-			this->LaunchCharacter(NewVelocity, false, false);
-
-			UE_LOG(LogTemp, Warning, TEXT("LashVelocity is: %s"), *NewVelocity.ToString());
-			
-			GetController()->SetIgnoreMoveInput(false);
+			LashHitResult = HitResult;
+			if (!GetWorld()->GetTimerManager().IsTimerActive(LashdelayTimer))
+			{
+				GetController()->SetIgnoreMoveInput(true);
+				GetWorldTimerManager().SetTimer(LashdelayTimer, this, &AMainCharacter::ExecuteLash, LashDelayDuration, false);
+			}
 
 		}
 		else
@@ -1112,18 +1110,41 @@ FVector AMainCharacter::CalculateLashVelocity(FHitResult hit)
 {
 	float GravityScale = GetCharacterMovement()->GravityScale;
 	float DisplacementZAxis = hit.Location.Z - GetActorLocation().Z;
-	FVector DisplacementXY = FVector(hit.Location.X - GetActorLocation().X, 0.f, hit.Location.Y - GetActorLocation().Y);
+	FVector DisplacementXY = FVector(hit.Location.X - GetActorLocation().X, hit.Location.Y - GetActorLocation().Y, 0.f);
 
 	FVector LowestPoint = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 1.f);
 	float LashRelativePos = hit.Location.Z - LowestPoint.Z;
 	float HighestPoint = LashRelativePos + OvershootYAxis;
 
-	FVector VelocityZ = FVector(0.f, 0.f, 1.f) * FMath::Sqrt(FMath::Abs( - 2.f * GravityScale * HighestPoint));
-	FVector VelocityXY = DisplacementXY / (FMath::Sqrt(FMath::Abs(-2.f * HighestPoint / GravityScale)) + FMath::Sqrt(FMath::Abs(2.f * (DisplacementZAxis - HighestPoint) / GravityScale)));
+	FVector VelocityZ = FVector(0.f, 0.f, 1.f) * FMath::Sqrt(2.f * GravityScale * HighestPoint);
+	FVector VelocityXY = (DisplacementXY / (FMath::Sqrt(2.f * HighestPoint / GravityScale) + FMath::Sqrt(-2.f * (DisplacementZAxis - HighestPoint) / GravityScale)));
 
 	FVector ResultVel = VelocityXY + VelocityZ;
 
 	return ResultVel;
+}
+
+void AMainCharacter::ExecuteLash()
+{
+	FVector NewVelocity = 22.5f * CalculateLashVelocity(LashHitResult);
+
+	//GetCharacterMovement()->GravityScale = 0.f;
+	GetCharacterMovement()->AirControl = 0;
+	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
+	GetCharacterMovement()->GroundFriction = 0.f;
+	GetCharacterMovement()->FallingLateralFriction = 0.f;
+
+	GetCharacterMovement()->Velocity = NewVelocity;
+	this->LaunchCharacter(CalculateLashVelocity(LashHitResult) * 10.f, false, false);
+
+
+	UE_LOG(LogTemp, Warning, TEXT("LashVelocity is: %s"), *NewVelocity.ToString());
+
+	GetController()->SetIgnoreMoveInput(false);
+
+
+	GetWorld()->GetTimerManager().ClearTimer(LashdelayTimer);
+	(LashdelayTimer).Invalidate();
 }
 
 void AMainCharacter::DrawAbilityMelee()
