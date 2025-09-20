@@ -1064,7 +1064,8 @@ void AMainCharacter::LashAbility()
 		if (!HitResult.GetActor()->IsA(ACharacter::StaticClass()))
 		{
 			GetController()->SetIgnoreMoveInput(true);
-			FVector NewVelocity = 100 * CalculateLashVelocity(HitResult);
+			FVector NewVelocity = 10.f * CalculateLashVelocity(HitResult);
+
 			this->LaunchCharacter(NewVelocity, false, false);
 
 			UE_LOG(LogTemp, Warning, TEXT("LashVelocity is: %s"), *NewVelocity.ToString());
@@ -1110,17 +1111,17 @@ void AMainCharacter::LashAbility()
 FVector AMainCharacter::CalculateLashVelocity(FHitResult hit)
 {
 	float GravityScale = GetCharacterMovement()->GravityScale;
-	float DisplacementYAxis = hit.Location.Y - GetActorLocation().Y;
-	FVector DisplacementZX = FVector(hit.Location.X - GetActorLocation().X, 0.f, hit.Location.Z - GetActorLocation().Z);
+	float DisplacementZAxis = hit.Location.Z - GetActorLocation().Z;
+	FVector DisplacementXY = FVector(hit.Location.X - GetActorLocation().X, 0.f, hit.Location.Y - GetActorLocation().Y);
 
-	FVector LowestPoint = FVector(GetActorLocation().X, GetActorLocation().Y - 1.f, GetActorLocation().Z);
-	float LashRelativePos = hit.Location.Y - LowestPoint.Y;
+	FVector LowestPoint = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 1.f);
+	float LashRelativePos = hit.Location.Z - LowestPoint.Z;
 	float HighestPoint = LashRelativePos + OvershootYAxis;
 
-	FVector VelocityY = FVector(0.f, 1.f, 0) * FMath::Sqrt(2.f * GravityScale * HighestPoint);
-	FVector VelocityXZ = DisplacementZX / (FMath::Sqrt(2.f * HighestPoint / GravityScale) + FMath::Sqrt(-2.f * (DisplacementYAxis - HighestPoint) / GravityScale));
+	FVector VelocityZ = FVector(0.f, 0.f, 1.f) * FMath::Sqrt(FMath::Abs( - 2.f * GravityScale * HighestPoint));
+	FVector VelocityXY = DisplacementXY / (FMath::Sqrt(FMath::Abs(-2.f * HighestPoint / GravityScale)) + FMath::Sqrt(FMath::Abs(2.f * (DisplacementZAxis - HighestPoint) / GravityScale)));
 
-	FVector ResultVel = VelocityXZ + VelocityY;
+	FVector ResultVel = VelocityXY + VelocityZ;
 
 	return ResultVel;
 }
