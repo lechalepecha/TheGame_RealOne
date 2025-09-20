@@ -1114,7 +1114,12 @@ FVector AMainCharacter::CalculateLashVelocity(FHitResult hit)
 
 	FVector LowestPoint = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 1.f);
 	float LashRelativePos = hit.Location.Z - LowestPoint.Z;
-	float HighestPoint = LashRelativePos + OvershootYAxis;
+	float HighestPoint = LashRelativePos + OvershootZAxis;
+
+	if (LashRelativePos < 0)
+	{
+		HighestPoint = OvershootZAxis;
+	}
 
 	FVector VelocityZ = FVector(0.f, 0.f, 1.f) * FMath::Sqrt(2.f * GravityScale * HighestPoint);
 	FVector VelocityXY = (DisplacementXY / (FMath::Sqrt(2.f * HighestPoint / GravityScale) + FMath::Sqrt(-2.f * (DisplacementZAxis - HighestPoint) / GravityScale)));
@@ -1128,11 +1133,6 @@ void AMainCharacter::ExecuteLash()
 {
 	FVector NewVelocity = 22.5f * CalculateLashVelocity(LashHitResult);
 
-	//GetCharacterMovement()->GravityScale = 0.f;
-	GetCharacterMovement()->AirControl = 0;
-	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
-	GetCharacterMovement()->GroundFriction = 0.f;
-	GetCharacterMovement()->FallingLateralFriction = 0.f;
 
 	GetCharacterMovement()->Velocity = NewVelocity;
 	this->LaunchCharacter(CalculateLashVelocity(LashHitResult) * 10.f, false, false);

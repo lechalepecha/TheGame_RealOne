@@ -486,7 +486,7 @@ protected:
 	FHitResult LashHitResult;
 	FVector CalculateLashVelocity(FHitResult hit);
 	void ExecuteLash();
-	float OvershootYAxis{ 100.f };
+	float OvershootZAxis{ 100.f };
 
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
