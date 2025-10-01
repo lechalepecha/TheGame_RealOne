@@ -17,12 +17,4 @@ void UWeaponReloadNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 	{
 		IWeaponWielderInterface::Execute_OnReloadSuccess(Actor);
 	}
-
-	/*
-	AMainCharacter* Char = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(MeshComp->GetWorld(), 0));
-
-	if (Char){
-		Char->IWeaponWielderInterface::Execute_OnReloadSuccess(Char);
-	}
-	*/
 }
