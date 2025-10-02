@@ -37,7 +37,13 @@ public:
 	/** projectile class to spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	bool IsProjectileWeapon = true;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
+	bool ShouldHomig = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
+	float ProjectileSpeed = 10000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
+	float HomingAccelerance = 5000.f;
+ 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Melee)
 	bool IsMeleeWeapon = false;
 
