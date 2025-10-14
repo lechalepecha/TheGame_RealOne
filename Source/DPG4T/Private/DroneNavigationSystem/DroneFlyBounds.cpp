@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include <DroneNavigationSystem/NavBoundsManager.h>
 
 // Sets default values
 ADroneFlyBounds::ADroneFlyBounds()
@@ -56,12 +57,15 @@ void ADroneFlyBounds::BeginPlay()
 
 	FiXFilledDotLocations();
 
-	SelectBestLocation();
+	GetWorld()->GetSubsystem<UNavBoundsManager>()->RegisterNavBounds(this);
+
+
+	/*SelectBestLocation(0, DotLocations.Num() - 1);
 
 	for (int i = 0; i < SelectedLocation.Num() - 1; i++)
 	{
 		DrawDebugLine(GetWorld(), DotLocations[SelectedLocation[i]].Location, DotLocations[SelectedLocation[i + 1]].Location, FColor::Red, false, 500.f);
-	}
+	}*/
 }
 
 
@@ -177,12 +181,11 @@ float ADroneFlyBounds::FindStepCost(FVector CurrentLocation, FVector NextLocatio
 	return Result;
 }
 
-void ADroneFlyBounds::SelectBestLocation()
+void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
 {
-	int32 StartIdx = 0;
-	int32 EndIdx = DotLocations.Num() - 1;
+	int32 StartIdx = StartLoc;
+	int32 EndIdx = EndLoc;
 
-	// Инициализация
 	TSet<int32> ClosedSet;
 	TSet<int32> OpenSet;
 	OpenSet.Add(StartIdx);
@@ -248,8 +251,95 @@ void ADroneFlyBounds::SelectBestLocation()
 		}
 	}
 	// Если сюда дошли — пути нет
-	//SelectedLocation.Empty();
+	SelectedLocation.Empty();
 }
+
+FORCEINLINE int ClampIndex(int idx, int maxIdx)
+{
+	return FMath::Clamp(idx, 0, maxIdx);
+}
+
+FORCEINLINE int NearestIndex1D(float Value, const TArray<float> Arr)
+{
+	int Best = 0;
+	float BestD2 = FMath::Square(Value - Arr[0]);
+	for (int i = 1; i < Arr.Num(); ++i)
+	{
+		float D2 = FMath::Square(Value - Arr[i]);
+		if (D2 < BestD2)
+		{
+			BestD2 = D2;
+			Best = i;
+		}
+	}
+	return Best;
+}
+
+
+int ADroneFlyBounds::GetClosestLocation(FVector CurrentLocation)
+{
+	/*const int xi = NearestIndex1D(CurrentLocation.X, XArray);
+	const int yi = NearestIndex1D(CurrentLocation.Y, YArray);
+	const int zi = NearestIndex1D(CurrentLocation.Z, ZArray);
+
+	// Проверим очень локально окрестность (чтобы точно попасть в ближайший при неточностях)
+	int bestI = xi, bestJ = yi, bestK = zi;
+	float bestD2 = TNumericLimits<float>::Max();
+
+	for (int dx = -1; dx <= 1; ++dx)
+		for (int dy = -1; dy <= 1; ++dy)
+			for (int dz = -1; dz <= 1; ++dz)
+			{
+				const int i = FMath::Clamp(xi + dx, 0, XArray.Num() - 1);
+				const int j = FMath::Clamp(yi + dy, 0, YArray.Num() - 1);
+				const int k = FMath::Clamp(zi + dz, 0, ZArray.Num() - 1);
+
+				const FVector Q(XArray[i], YArray[j], ZArray[k]);
+				const float d2 = FVector::DistSquared(CurrentLocation, Q);
+				if (d2 < bestD2)
+				{
+					bestD2 = d2; bestI = i; bestJ = j; bestK = k;
+				}
+			}
+
+	const int Ny = YArray.Num();
+	const int Nz = ZArray.Num();*/
+	float best = FLT_MAX;
+	int bestInt = 0;
+	for (int i = 0; i < DotLocations.Num(); i++)
+	{
+		float bestTemp = FVector::DistSquared(DotLocations[i].Location, CurrentLocation);
+
+		if (bestTemp < best)
+		{
+			best = bestTemp;
+			bestInt = i;
+		}
+	}
+
+	return bestInt;
+}
+
+void ADroneFlyBounds::CalcTheRoute_Implementation(FVector CurrentLocation, FVector EndLocation, APawn* Drone)
+{
+	SelectBestLocation(GetClosestLocation(CurrentLocation), GetClosestLocation(EndLocation));
+
+	TArray<FVector> RouteInLocations;
+	for (int i = 0; i < SelectedLocation.Num(); i++)
+	{
+		RouteInLocations.Add(DotLocations[SelectedLocation[i]].Location);
+	}
+
+	IFlyingNavigationInterface::Execute_GetTheRouteInLocations(Drone, RouteInLocations);
+}
+
+void ADroneFlyBounds::GetTheRouteInLocations_Implementation(const TArray<FVector>& RouteInLocations)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("Бессмысленная реализация GetTheRouteInLocations вызвана. Количество точек маршрута: %d"), RouteInLocations.Num());
+	//int jopa = RouteInLocations.Num();
+}
+
+
 
 TArray<float> ADroneFlyBounds::FillAxisArrays(float AxisMin, float AxisMax, float Interval)
 {

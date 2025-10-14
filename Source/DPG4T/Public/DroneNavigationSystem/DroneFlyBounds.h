@@ -7,13 +7,14 @@
 #include "vector"
 #include "GameFramework/Actor.h"
 #include "DotLocationInfo.h"
+#include "FlyingNavigationInterface.h"
 #include "DroneFlyBounds.generated.h"
 
 class UBoxComponent;
 class USceneComponent;
 
 UCLASS(config = Game)
-class DPG4T_API ADroneFlyBounds : public AActor
+class DPG4T_API ADroneFlyBounds : public AActor, public IFlyingNavigationInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +50,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bounds, meta = (AllowPrivateAccess = "true"))
 	TArray<int> SelectedLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bounds, meta = (AllowPrivateAccess = "true"))
+	TArray<FDotLocationInfo> DotLocations;
+
 
 protected:
 
@@ -58,7 +62,6 @@ protected:
 
 	FDotLocationInfo CurrentDotLocation;
 	
-	TArray<FDotLocationInfo> DotLocations;
 
 
 protected:
@@ -75,10 +78,17 @@ protected:
 	float FindHeuristics(FVector CurrentLocation, FVector EndLocation);
 	float FindStepCost(FVector CurrentLocation, FVector NextLocation);
 
-	void SelectBestLocation();
+	void SelectBestLocation(int StartLocation, int EndLocation);
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	int GetClosestLocation(FVector CurrentLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "Navigation")
+	void CalcTheRoute_Implementation(FVector CurrentLcoation, FVector EndLocation, APawn* Drone) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Navigation")
+	void GetTheRouteInLocations_Implementation(const TArray<FVector>& RouteInLocations) override;
 };
