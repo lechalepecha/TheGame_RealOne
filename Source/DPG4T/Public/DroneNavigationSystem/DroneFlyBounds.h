@@ -48,8 +48,8 @@ public:
 
 	
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bounds, meta = (AllowPrivateAccess = "true"))
-	TArray<int> SelectedLocation;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bounds, meta = (AllowPrivateAccess = "true"))
+	//TArray<int> SelectedLocations;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bounds, meta = (AllowPrivateAccess = "true"))
 	TArray<FDotLocationInfo> DotLocations;
 
@@ -78,7 +78,7 @@ protected:
 	float FindHeuristics(FVector CurrentLocation, FVector EndLocation);
 	float FindStepCost(FVector CurrentLocation, FVector NextLocation);
 
-	void SelectBestLocation(int StartLocation, int EndLocation);
+	TArray<int> SelectBestLocation(int StartLocation, int EndLocation, TArray<FDotLocationInfo> LocationsCopy);
 
 public:	
 	// Called every frame

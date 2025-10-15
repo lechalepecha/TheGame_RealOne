@@ -4,6 +4,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Async/Async.h"
 #include "Kismet/KismetMathLibrary.h"
 #include <DroneNavigationSystem/NavBoundsManager.h>
 
@@ -181,7 +182,7 @@ float ADroneFlyBounds::FindStepCost(FVector CurrentLocation, FVector NextLocatio
 	return Result;
 }
 
-void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
+TArray<int> ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc, TArray<FDotLocationInfo> LocationsCopy)
 {
 	int32 StartIdx = StartLoc;
 	int32 EndIdx = EndLoc;
@@ -192,13 +193,14 @@ void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
 
 	TMap<int32, int32> CameFrom;
 	TMap<int32, float> GScore;
-	for (int32 i = 0; i < DotLocations.Num(); ++i) GScore.Add(i, FLT_MAX);
+	for (int32 i = 0; i < LocationsCopy.Num(); ++i) GScore.Add(i, FLT_MAX);
 	GScore[StartIdx] = 0;
+	TArray<int> SelectedLocations;
 
 	TMap<int32, float> FScore;
-	for (int32 i = 0; i < DotLocations.Num(); ++i)
+	for (int32 i = 0; i < LocationsCopy.Num(); ++i)
 		FScore.Add(i, FLT_MAX);
-	FScore[StartIdx] = FindHeuristics(DotLocations[StartIdx].Location, DotLocations[EndIdx].Location);
+	FScore[StartIdx] = FindHeuristics(LocationsCopy[StartIdx].Location, LocationsCopy[EndIdx].Location);
 
 	while (OpenSet.Num() > 0)
 	{
@@ -216,20 +218,20 @@ void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
 		if (Current == EndIdx)
 		{
 			// Восстановить путь через CameFrom
-			SelectedLocation.Empty();
+			SelectedLocations.Empty();
 			int Step = EndIdx;
 			while (CameFrom.Contains(Step))
 			{
-				SelectedLocation.Insert(Step, 0);
+				SelectedLocations.Insert(Step, 0);
 				Step = CameFrom[Step];
 			}
-			SelectedLocation.Insert(StartIdx, 0);
-			return;
+			SelectedLocations.Insert(StartIdx, 0);
+			return SelectedLocations;
 		}
 		OpenSet.Remove(Current);
 		ClosedSet.Add(Current);
 
-		auto& CurDot = DotLocations[Current];
+		auto& CurDot = LocationsCopy[Current];
 		for (int32 n = 0; n < CurDot.NeighbourLinearIndex.Num(); ++n)
 		{
 			int32 Neigh = CurDot.NeighbourLinearIndex[n];
@@ -237,7 +239,7 @@ void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
 			if (ClosedSet.Contains(Neigh)) continue;
 
 			float TentativeG = GScore[Current]
-				+ FindStepCost(CurDot.Location, DotLocations[Neigh].Location);
+				+ FindStepCost(CurDot.Location, LocationsCopy[Neigh].Location);
 
 				if (!OpenSet.Contains(Neigh))
 					OpenSet.Add(Neigh);
@@ -247,11 +249,12 @@ void ADroneFlyBounds::SelectBestLocation(int StartLoc, int EndLoc)
 				CameFrom.Add(Neigh, Current);
 				GScore[Neigh] = TentativeG;
 				FScore[Neigh] = GScore[Neigh]
-					+ FindHeuristics(DotLocations[Neigh].Location, DotLocations[EndIdx].Location);
+					+ FindHeuristics(LocationsCopy[Neigh].Location, LocationsCopy[EndIdx].Location);
 		}
 	}
 	// Если сюда дошли — пути нет
-	SelectedLocation.Empty();
+	SelectedLocations.Empty();
+	return SelectedLocations;
 }
 
 FORCEINLINE int ClampIndex(int idx, int maxIdx)
@@ -278,32 +281,7 @@ FORCEINLINE int NearestIndex1D(float Value, const TArray<float> Arr)
 
 int ADroneFlyBounds::GetClosestLocation(FVector CurrentLocation)
 {
-	/*const int xi = NearestIndex1D(CurrentLocation.X, XArray);
-	const int yi = NearestIndex1D(CurrentLocation.Y, YArray);
-	const int zi = NearestIndex1D(CurrentLocation.Z, ZArray);
 
-	// Проверим очень локально окрестность (чтобы точно попасть в ближайший при неточностях)
-	int bestI = xi, bestJ = yi, bestK = zi;
-	float bestD2 = TNumericLimits<float>::Max();
-
-	for (int dx = -1; dx <= 1; ++dx)
-		for (int dy = -1; dy <= 1; ++dy)
-			for (int dz = -1; dz <= 1; ++dz)
-			{
-				const int i = FMath::Clamp(xi + dx, 0, XArray.Num() - 1);
-				const int j = FMath::Clamp(yi + dy, 0, YArray.Num() - 1);
-				const int k = FMath::Clamp(zi + dz, 0, ZArray.Num() - 1);
-
-				const FVector Q(XArray[i], YArray[j], ZArray[k]);
-				const float d2 = FVector::DistSquared(CurrentLocation, Q);
-				if (d2 < bestD2)
-				{
-					bestD2 = d2; bestI = i; bestJ = j; bestK = k;
-				}
-			}
-
-	const int Ny = YArray.Num();
-	const int Nz = ZArray.Num();*/
 	float best = FLT_MAX;
 	int bestInt = 0;
 	for (int i = 0; i < DotLocations.Num(); i++)
@@ -322,15 +300,35 @@ int ADroneFlyBounds::GetClosestLocation(FVector CurrentLocation)
 
 void ADroneFlyBounds::CalcTheRoute_Implementation(FVector CurrentLocation, FVector EndLocation, APawn* Drone)
 {
-	SelectBestLocation(GetClosestLocation(CurrentLocation), GetClosestLocation(EndLocation));
 
-	TArray<FVector> RouteInLocations;
-	for (int i = 0; i < SelectedLocation.Num(); i++)
+	TArray<FDotLocationInfo> LocationsCopy = DotLocations;
+	TWeakObjectPtr<APawn> WeakDrone(Drone);
+
+	int StartIndex = GetClosestLocation(CurrentLocation);
+	int EndIndex = GetClosestLocation(EndLocation);
+
+	Async(EAsyncExecution::ThreadPool, [this, LocationsCopy, WeakDrone, StartIndex, EndIndex]()
 	{
-		RouteInLocations.Add(DotLocations[SelectedLocation[i]].Location);
-	}
+		TArray<int> SelectedLocation = SelectBestLocation(StartIndex, EndIndex, LocationsCopy);
 
-	IFlyingNavigationInterface::Execute_GetTheRouteInLocations(Drone, RouteInLocations);
+		TArray<FVector> RouteInLocations;
+		for (int i = 0; i < SelectedLocation.Num(); i++)
+		{
+			RouteInLocations.Add(LocationsCopy[SelectedLocation[i]].Location);
+		}
+		
+		Async(EAsyncExecution::TaskGraphMainThread, [WeakDrone, RouteInLocations]() 
+		{
+			if (APawn* ValidDrone = WeakDrone.Get())
+			{
+				IFlyingNavigationInterface::Execute_GetTheRouteInLocations(ValidDrone, RouteInLocations);
+			}
+		});
+
+
+		// IFlyingNavigationInterface::Execute_GetTheRouteInLocations(WeakDrone, RouteInLocations);
+	});
+
 }
 
 void ADroneFlyBounds::GetTheRouteInLocations_Implementation(const TArray<FVector>& RouteInLocations)
