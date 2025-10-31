@@ -1264,7 +1264,7 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	CoyoteTimerHandle.Invalidate();
 	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
 	SprintTimerHandle.Invalidate();
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	//GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	MakeNoise(1.f, this, GetActorLocation());
 
 

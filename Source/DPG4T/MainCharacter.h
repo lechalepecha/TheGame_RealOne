@@ -232,7 +232,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	UCurveFloat* CrouchAlphaCurve = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	float BaseWalkSpeed{ 520.f };
+	float BaseWalkSpeed{ 800.f };
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void CrouchTLCallback(float val);
