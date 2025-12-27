@@ -307,7 +307,7 @@ void ADroneFlyBounds::CalcTheRoute_Implementation(FVector CurrentLocation, FVect
 	int StartIndex = GetClosestLocation(CurrentLocation);
 	int EndIndex = GetClosestLocation(EndLocation);
 
-	Async(EAsyncExecution::ThreadPool, [this, LocationsCopy, WeakDrone, StartIndex, EndIndex]()
+	Async(EAsyncExecution::ThreadPool, [this, LocationsCopy, WeakDrone, StartIndex, EndIndex, CurrentLocation, EndLocation]()
 	{
 		TArray<int> SelectedLocation = SelectBestLocation(StartIndex, EndIndex, LocationsCopy);
 
@@ -316,6 +316,8 @@ void ADroneFlyBounds::CalcTheRoute_Implementation(FVector CurrentLocation, FVect
 		{
 			RouteInLocations.Add(LocationsCopy[SelectedLocation[i]].Location);
 		}
+		RouteInLocations[0] = CurrentLocation;
+		RouteInLocations[SelectedLocation.Num()-1] = EndLocation;
 		
 		Async(EAsyncExecution::TaskGraphMainThread, [WeakDrone, RouteInLocations]() 
 		{

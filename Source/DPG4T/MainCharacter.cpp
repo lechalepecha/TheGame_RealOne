@@ -123,7 +123,7 @@ AMainCharacter::AMainCharacter()
 	DashCamTL->AddInterpFloat(DashCamAlphaCurve, onDashCamTLCallback);
 
 	MantleTL = CreateDefaultSubobject<UTimelineComponent>(FName("MantleTL"));
-	MantleTL->SetTimelineLength(0.75f);
+	MantleTL->SetTimelineLength(0.5f);
 	MantleTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 
 	FOnTimelineFloat onMantleTLCallback;
@@ -131,7 +131,9 @@ AMainCharacter::AMainCharacter()
 	MantleAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("MantleAlphaCurve"));
 	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
 	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.75f, 1.f);
+	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.3f, 1.f);
+	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	KeyHandle = MantleAlphaCurve->FloatCurve.AddKey(0.5f, 0.f);
 	MantleAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
 	MantleTL->AddInterpFloat(MantleAlphaCurve, onMantleTLCallback);
 	FOnTimelineEvent onMantleTLFinished;
@@ -307,7 +309,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	
 	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling && tryMantle)
 	{
-		MantleCheck();
+		NewMantleCheck();
 	}
 	//UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
@@ -426,6 +428,66 @@ void AMainCharacter::FinishedSprintDelegate()
 
 }
 
+bool AMainCharacter::NewMantleCheck()
+{
+	if (!MantleTimer.IsValid())
+	{
+		FVector StartLocation = GetActorLocation();
+
+		FVector ForwardEndVector = StartLocation + GetActorForwardVector() * 75.f;
+
+		//FVector LeftForwardVector = UKismetMathLibrary::RotateAngleAxis(ForwardEndVector, -90.f, GetActorUpVector());
+		//FVector RightForwardVector = UKismetMathLibrary::RotateAngleAxis(ForwardEndVector, 90.f, GetActorUpVector());
+
+		FHitResult HitResForward;
+		//FHitResult HitResLeft;
+		//FHitResult HitResRight;
+
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, ForwardEndVector, ECollisionChannel::ECC_WorldStatic, Params);
+		DrawDebugLine(GetWorld(), StartLocation, ForwardEndVector, FColor::Red, false, 0.1f);
+		//GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, LeftForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
+		//DrawDebugLine(GetWorld(), StartLocation, LeftForwardVector, FColor::Red, false, 0.1f);
+		///GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, RightForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
+		//DrawDebugLine(GetWorld(), StartLocation, RightForwardVector, FColor::Red, false, 0.1f);
+
+		if (HitResForward.bBlockingHit)//t || HitResLeft.bBlockingHit || HitResRight.bBlockingHit)
+		{
+			NewMantleStart();
+			return true;
+		}
+		return false;
+	}
+	return false;
+}
+
+void AMainCharacter::NewMantleStart()
+{
+	GetWorldTimerManager().SetTimer(MantleTimer, this, &AMainCharacter::NewMantleEnd, 0.5f, false);
+
+
+	isMantling = true;
+	//LastVelocity = GetCharacterMovement()->Velocity;
+
+	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 750.f);
+	//GetCharacterMovement()->StopMovementImmediately();
+	//GetController()->SetIgnoreMoveInput(true);
+	//MantleTarget = LedgeTransform;
+	//MantleTL->PlayFromStart();
+
+	//GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 2000.f);
+}
+
+void AMainCharacter::NewMantleEnd()
+{
+	GetCharacterMovement()->Velocity = FVector(GetCharacterMovement()->Velocity.X/10.f, GetCharacterMovement()->Velocity.Y/10.f, 100.f);
+	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
+	MantleTimer.Invalidate();
+	isMantling = false;
+}
+
 bool AMainCharacter::MantleCheck()
 {
 	FVector CapsuleLocationWithInput = GetCapsuleBaseLocation(2.f) + GetActorForwardVector() * 50.f;
@@ -507,6 +569,7 @@ void AMainCharacter::MantleStart(float MantleHeight, FTransform LedgeTransform, 
 
 void AMainCharacter::MantleEnd()
 {
+	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
 	GetController()->SetIgnoreMoveInput(false);
 	isMantling = false;
 
@@ -515,8 +578,9 @@ void AMainCharacter::MantleEnd()
 void AMainCharacter::MantleTLCallback(float val)
 {
 	MantleAlpha = val;
-	FVector newLocation = FMath::Lerp(GetActorLocation(), MantleTarget.GetLocation(), MantleAlpha);
-	SetActorLocation(newLocation);
+	//FVector newLocation = FMath::Lerp(GetActorLocation(), MantleTarget.GetLocation(), MantleAlpha);
+	GetCharacterMovement()->Velocity = FMath::Lerp(GetCharacterMovement()->Velocity, FVector(0.f, 0.f, 1000.f), MantleAlpha);
+	//SetActorLocation(newLocation);
 }
 
 void AMainCharacter::GetPlayerMovementInput()

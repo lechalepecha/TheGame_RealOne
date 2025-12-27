@@ -197,6 +197,15 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	/* Mantle Action */
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	bool NewMantleCheck();
+
+	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void NewMantleStart();
+
+	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
+	void NewMantleEnd();
+
+	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	bool MantleCheck();
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
@@ -566,6 +575,8 @@ protected:
 	/*Dash ability*/
 	FTimerHandle DashRollbackHandle;
 	FTimerHandle DashTime;
+
+	FTimerHandle MantleTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	FVector LastVelocity;
