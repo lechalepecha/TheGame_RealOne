@@ -140,21 +140,19 @@ AMainCharacter::AMainCharacter()
 	onMantleTLFinished.BindUFunction(this, FName{ TEXT("MantleEnd") });
 	MantleTL->SetTimelineFinishedFunc(onMantleTLFinished);
 
-	SprintTL = CreateDefaultSubobject<UTimelineComponent>(FName("SprintTL"));
-	SprintTL->SetTimelineLength(0.2f);
-	SprintTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+	ClimbTL = CreateDefaultSubobject<UTimelineComponent>(FName("ClimbTL"));
+	ClimbTL->SetTimelineLength(0.25f);
+	ClimbTL->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 
-	FOnTimelineFloat onSprintTLCallback;
-	onSprintTLCallback.BindUFunction(this, FName{ TEXT("SprintTLCallback") });
-	SprintAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("SprintAlphaCurve"));
-	KeyHandle = SprintAlphaCurve->FloatCurve.AddKey(0.f, 1.f);
-	SprintAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	KeyHandle = SprintAlphaCurve->FloatCurve.AddKey(2.5f, 1.75f);
-	SprintAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
-	SprintTL->AddInterpFloat(SprintAlphaCurve, onSprintTLCallback);
-	FOnTimelineEvent onSprintTLFinished;
-	onSprintTLFinished.BindUFunction(this, FName{ TEXT("FinishedSprintDelegate") });
-	SprintTL->SetTimelineFinishedFunc(onSprintTLFinished);
+	FOnTimelineFloat onClimbTLCallback;
+	onClimbTLCallback.BindUFunction(this, FName{ TEXT("ClimbTLCallback") });
+	ClimbAlphaCurve = CreateDefaultSubobject<UCurveFloat>(FName("ClimbAlphaCurve"));
+	KeyHandle = ClimbAlphaCurve->FloatCurve.AddKey(0.f, 0.f);
+	ClimbAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	KeyHandle = ClimbAlphaCurve->FloatCurve.AddKey(0.25f, 1.f);
+	ClimbAlphaCurve->FloatCurve.SetKeyInterpMode(KeyHandle, ERichCurveInterpMode::RCIM_Cubic, /*auto*/true);
+	ClimbTL->AddInterpFloat(ClimbAlphaCurve, onClimbTLCallback);
+
 
 	DipTL = CreateDefaultSubobject<UTimelineComponent>(FName("DipTL"));
 	DipTL->SetTimelineLength(1.f);
@@ -307,10 +305,13 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 	
-	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !isMantling && tryMantle)
+	if (/* && !haveMantled && */GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
 	{
+
 		NewMantleCheck();
+		//NewMantleStart();
 	}
+
 	//UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
 
@@ -350,6 +351,13 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component!"), *GetNameSafe(this));
 	}
+}
+
+void AMainCharacter::ClimbEnd()
+{
+	currentAngle = targetAngle;
+	targetAngle = 0.f;
+
 }
 
 void AMainCharacter::UpdateGroundMovementSpeed()
@@ -401,24 +409,24 @@ void AMainCharacter::CrouchTLCallback(float val)
 	UpdatePlayerCapsuleHeight();
 }
 
-void AMainCharacter::OnSprintTimerEnd()
+void AMainCharacter::ClimbTLCallback(float val)
 {
-	Sprinting = true;
-	MoveMode = ECustomMovementMode::Sprinting;
-	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
-	SprintTimerHandle.Invalidate();
+	ClimbAlpha = val;
+	float CurrentAngle;
+	if (isMantling)
+	{
+		CurrentAngle = FMath::Lerp(currentAngle, targetAngle, val);
 
-	SprintTL->Play();
-	UE_LOG(LogTemplateCharacter, Warning, TEXT("Timer ended start encreasing max walk speed"));
+	}
+	else
+	{
+		CurrentAngle = FMath::Lerp(currentAngle, targetAngle, 1.f - val);
 
-}
+	}
 
-void AMainCharacter::SprintTLCallback(float val)
-{
-	SprintAlpha = val;
-	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed * SprintAlpha;
-	UE_LOG(LogTemplateCharacter, Error, TEXT("encreasing max walk speed"));
+	FRotator Rotator = FRotator(0.f, 0.f, CurrentAngle);
 
+	Offset_Root->SetRelativeRotation(Rotator);
 }
 
 void AMainCharacter::FinishedSprintDelegate()
@@ -430,62 +438,106 @@ void AMainCharacter::FinishedSprintDelegate()
 
 bool AMainCharacter::NewMantleCheck()
 {
-	if (!MantleTimer.IsValid())
-	{
 		FVector StartLocation = GetActorLocation();
 
 		FVector ForwardEndVector = StartLocation + GetActorForwardVector() * 75.f;
 
-		//FVector LeftForwardVector = UKismetMathLibrary::RotateAngleAxis(ForwardEndVector, -90.f, GetActorUpVector());
-		//FVector RightForwardVector = UKismetMathLibrary::RotateAngleAxis(ForwardEndVector, 90.f, GetActorUpVector());
+		FVector RightForwardVector = StartLocation + GetFirstPersonCameraComponent()->GetRightVector() * 70.f;
+		FVector LeftForwardVector = StartLocation - GetFirstPersonCameraComponent()->GetRightVector() * 70.f;
 
 		FHitResult HitResForward;
-		//FHitResult HitResLeft;
-		//FHitResult HitResRight;
+		FHitResult HitResLeft;
+		FHitResult HitResRight;
 
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
 
-		GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, ForwardEndVector, ECollisionChannel::ECC_WorldStatic, Params);
-		DrawDebugLine(GetWorld(), StartLocation, ForwardEndVector, FColor::Red, false, 0.1f);
-		//GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, LeftForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
-		//DrawDebugLine(GetWorld(), StartLocation, LeftForwardVector, FColor::Red, false, 0.1f);
-		///GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, RightForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
-		//DrawDebugLine(GetWorld(), StartLocation, RightForwardVector, FColor::Red, false, 0.1f);
+		//GetWorld()->LineTraceSingleByChannel(HitResForward, StartLocation, ForwardEndVector, ECollisionChannel::ECC_Visibility, Params);
+		//DrawDebugLine(GetWorld(), StartLocation, ForwardEndVector, FColor::Red, false, 0.1f);
+		GetWorld()->LineTraceSingleByChannel(HitResLeft, StartLocation, LeftForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
+		DrawDebugLine(GetWorld(), StartLocation, LeftForwardVector, FColor::Green, false, 15.f);
+		GetWorld()->LineTraceSingleByChannel(HitResRight, StartLocation, RightForwardVector, ECollisionChannel::ECC_WorldStatic, Params);
+		DrawDebugLine(GetWorld(), StartLocation, RightForwardVector, FColor::Blue, false, 15.f);
 
-		if (HitResForward.bBlockingHit)//t || HitResLeft.bBlockingHit || HitResRight.bBlockingHit)
+		if (HitResLeft.bBlockingHit)
 		{
-			NewMantleStart();
+			if(!isMantling)
+				NewMantleStart(5.f);
 			return true;
 		}
+		else
+		{
+			if (HitResRight.bBlockingHit)
+			{
+				if(!isMantling)
+					NewMantleStart(-5.f);
+				return true;
+			}
+			else
+			{
+				if (Offset_Root->GetRelativeRotation().Roll != 0)
+				{
+					NewMantleEnd();
+				}
+			}
+				
+		}
 		return false;
-	}
-	return false;
+
 }
 
-void AMainCharacter::NewMantleStart()
+void AMainCharacter::NewMantleStart(float Angle)
 {
-	GetWorldTimerManager().SetTimer(MantleTimer, this, &AMainCharacter::NewMantleEnd, 0.5f, false);
+	//GetWorldTimerManager().SetTimer(MantleTimer, this, &AMainCharacter::NewMantleEnd, 0.5f, false);
 
 
 	isMantling = true;
-	//LastVelocity = GetCharacterMovement()->Velocity;
-
-	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 750.f);
+	//haveMantled = true;
+	//GetCharacterMovement()->Velocity += FVector(0.f, 0.f, 0.f);// FVector(0.f, 0.f, 750.f);
 	//GetCharacterMovement()->StopMovementImmediately();
+
+	GetCharacterMovement()->GravityScale = 0.1f;
+	FRotator CurrentRotation = Offset_Root->GetRelativeRotation();
+
+
+	//LastVelocity = GetCharacterMovement()->Velocity;
+	
+	//GetCharacterMovement()->AirControl = 0.f;
 	//GetController()->SetIgnoreMoveInput(true);
 	//MantleTarget = LedgeTransform;
 	//MantleTL->PlayFromStart();
 
 	//GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 2000.f);
+	
+	currentAngle = CurrentRotation.Roll;
+	targetAngle = Angle;
+	if (!ClimbTL->IsPlaying())
+	{
+
+		ClimbTL->PlayFromStart();
+
+	}
 }
 
 void AMainCharacter::NewMantleEnd()
 {
-	GetCharacterMovement()->Velocity = FVector(GetCharacterMovement()->Velocity.X/10.f, GetCharacterMovement()->Velocity.Y/10.f, 100.f);
-	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
-	MantleTimer.Invalidate();
+	//GetCharacterMovement()->Velocity = FVector(GetCharacterMovement()->Velocity.X/10.f, GetCharacterMovement()->Velocity.Y/10.f, 100.f);
+	//GetWorld()->GetTimerManager().ClearTimer(MantleTimer);
+//	MantleTimer.Invalidate();
+	//targetAngle = 0.f;
 	isMantling = false;
+
+	if (!ClimbTL->IsPlaying()) 
+	{
+
+		ClimbTL->PlayFromStart();
+	}
+
+
+	haveMantled = false;
+	GetCharacterMovement()->JumpZVelocity = 650.f;
+	GetCharacterMovement()->GravityScale = 1.5f;
+	//targetAngle = 0.f;
 }
 
 bool AMainCharacter::MantleCheck()
@@ -571,6 +623,7 @@ void AMainCharacter::MantleEnd()
 {
 	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
 	GetController()->SetIgnoreMoveInput(false);
+
 	isMantling = false;
 
 }
@@ -629,39 +682,6 @@ bool AMainCharacter::CapsuleHasRoomCheck(UCapsuleComponent* Capsule, FVector Tar
 	else
 	{
 		return false;
-	}
-}
-
-void AMainCharacter::StartSprint()
-{	
-	if (GetCharacterMovement()->GetLastUpdateVelocity().Length() > 0.f && CanSprint && !Sprinting && !GetWorld()->GetTimerManager().IsTimerActive(SprintTimerHandle))
-	{
-		
-		switch (MoveMode)
-		{
-		case ECustomMovementMode::Walking:
-			//GetFPAnimInstance()->SetSprintBlendOutTime(GetFPAnimInstance()->BaseSprintBlendOutTime);
-			//MoveMode = ECustomMovementMode::Sprinting;
-
-			GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &AMainCharacter::OnSprintTimerEnd, 5.f, false);
-			UE_LOG(LogTemplateCharacter, Warning, TEXT("Character started moving, start Timer to start running"));
-			break;
-
-		case ECustomMovementMode::Crouching:
-			break;
-		default:
-			break;
-		}
-
-	}
-	else
-	{
-		if (GetCharacterMovement()->GetLastUpdateVelocity().Length() == 0.f) 
-		{
-			GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
-			SprintTimerHandle.Invalidate();
-		}
-
 	}
 }
 
@@ -1319,15 +1339,23 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 	LandingDip();
 
+	if (Offset_Root->GetRelativeRotation().Roll != 0)
+	{
+		NewMantleEnd();
+	}
+
 	tryMantle = false;
+
+	targetAngle = 0.f;
+	GetCharacterMovement()->GravityScale = 1.5f;
 	JumpsLeft = JumpsMax;
 
 	// sequence 1
 	// On landing, clear coyote timer
 	GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
 	CoyoteTimerHandle.Invalidate();
-	GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
-	SprintTimerHandle.Invalidate();
+	//GetWorld()->GetTimerManager().ClearTimer(SprintTimerHandle);
+	//SprintTimerHandle.Invalidate();
 	//GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	MakeNoise(1.f, this, GetActorLocation());
 
@@ -1344,12 +1372,24 @@ void AMainCharacter::Landed(const FHitResult& Hit)
 
 void AMainCharacter::OnJumped_Implementation()
 {
+
 	Super::OnJumped_Implementation();
 
+	tryMantle = true;
+	/*if (NewMantleCheck())
+	{
+		haveMantled = true;
+		GetCharacterMovement()->Velocity += GetActorForwardVector();
+		GetCharacterMovement()->JumpZVelocity = 1000.f;
+	}
+	else
+	{
+
+	}*/
 	JumpsLeft = FMath::Clamp(JumpsLeft - 1, 0, JumpsMax);
+
 	Dip(5.f, 1.f);
 
-	tryMantle = true;
 
 	if (float remainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(CoyoteTimerHandle); remainingTime > 0.f)
 	{
@@ -1365,6 +1405,7 @@ void AMainCharacter::OnJumped_Implementation()
 	// On jump, clear coyote timer
 	GetWorld()->GetTimerManager().ClearTimer(CoyoteTimerHandle);
 	CoyoteTimerHandle.Invalidate();
+	
 }
 
 bool AMainCharacter::CanJumpInternal_Implementation() const

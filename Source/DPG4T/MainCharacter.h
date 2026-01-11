@@ -200,7 +200,7 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	bool NewMantleCheck();
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void NewMantleStart();
+	void NewMantleStart(float Angle);
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
 	void NewMantleEnd();
@@ -247,13 +247,13 @@ class AMainCharacter : public ACharacter, public IWeaponWielderInterface
 	void CrouchTLCallback(float val);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	UTimelineComponent* SprintTL = nullptr;
+	UTimelineComponent* ClimbTL = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	UCurveFloat* SprintAlphaCurve = nullptr;
+	UCurveFloat* ClimbAlphaCurve = nullptr;
 
 	UFUNCTION(BlueprintCallable, Category = Timeline, meta = (AllowPrivateAccess = "true"))
-	void SprintTLCallback(float val);
+	void ClimbTLCallback(float val);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
 	USoundBase* AbilityCue = nullptr;
@@ -497,6 +497,7 @@ protected:
 	void ExecuteLash();
 	float OvershootZAxis{ 100.f };
 
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
 	virtual void Landed(const FHitResult& Hit) override;
@@ -508,7 +509,17 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	float targetAngle = 0.f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	float currentAngle = 0.f;
+
+	void ClimbEnd();
+
 public:
+
+
 	/** Returns Mesh1P subobject **/
 	UFUNCTION(BlueprintCallable, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
@@ -612,6 +623,7 @@ protected:
 	float ForwardTraceRaius = 30.f;
 	float DownwardTraceRadius = 30.f;
 	bool isMantling;
+	bool haveMantled = false;
 	FTransform MantleTarget;
 	bool tryMantle;
 
@@ -708,15 +720,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
 	float CamAnimAlpha{ 0.f };
 
-	FTimerHandle SprintTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ExposedProperties)
-	float SprintAlpha;
+	float ClimbAlpha;
 
 private:
 
 	bool CanSprint = true;
 	bool Sprinting = false;
-	void OnSprintTimerEnd();
+	//void OnSprintTimerEnd();
 
 	int32 JumpsLeft{ 2 };
 	int32 JumpsMax{ 2 };
