@@ -446,8 +446,7 @@ bool AMainCharacter::NewMantleCheck()
 		FVector LeftForwardVector = StartLocation - GetFirstPersonCameraComponent()->GetRightVector() * 70.f;
 
 		FHitResult HitResForward;
-		FHitResult HitResLeft;
-		FHitResult HitResRight;
+
 
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
@@ -496,7 +495,7 @@ void AMainCharacter::NewMantleStart(float Angle)
 	//GetCharacterMovement()->Velocity += FVector(0.f, 0.f, 0.f);// FVector(0.f, 0.f, 750.f);
 	//GetCharacterMovement()->StopMovementImmediately();
 
-	GetCharacterMovement()->GravityScale = 0.1f;
+	//GetCharacterMovement()->GravityScale = 0.7f;
 	FRotator CurrentRotation = Offset_Root->GetRelativeRotation();
 
 
@@ -535,8 +534,8 @@ void AMainCharacter::NewMantleEnd()
 
 
 	haveMantled = false;
-	GetCharacterMovement()->JumpZVelocity = 650.f;
-	GetCharacterMovement()->GravityScale = 1.5f;
+	//GetCharacterMovement()->JumpZVelocity = 650.f;
+	//GetCharacterMovement()->GravityScale = 1.5f;
 	//targetAngle = 0.f;
 }
 
@@ -1376,17 +1375,35 @@ void AMainCharacter::OnJumped_Implementation()
 	Super::OnJumped_Implementation();
 
 	tryMantle = true;
-	/*if (NewMantleCheck())
+	if (NewMantleCheck())
 	{
-		haveMantled = true;
-		GetCharacterMovement()->Velocity += GetActorForwardVector();
-		GetCharacterMovement()->JumpZVelocity = 1000.f;
+		FVector StartLocation = GetActorLocation();
+
+		FVector ForwardEndVector = GetActorForwardVector() *75.f;
+		if (HitResLeft.bBlockingHit)
+		{
+
+			FVector LeftForwardVector = HitResLeft.ImpactNormal * 70.f;
+			FVector ResultVelocity = ForwardEndVector + LeftForwardVector;
+
+			GetCharacterMovement()->Velocity += ResultVelocity *10.f;
+
+		}
+		else
+		{
+			FVector RightForwardVector = HitResRight.ImpactNormal * 70.f;
+			FVector ResultVelocity = ForwardEndVector + RightForwardVector;
+
+			GetCharacterMovement()->Velocity += ResultVelocity *10.f;
+		}
+		JumpsLeft =1;
+
 	}
 	else
 	{
+		JumpsLeft = FMath::Clamp(JumpsLeft - 1, 0, JumpsMax);
 
-	}*/
-	JumpsLeft = FMath::Clamp(JumpsLeft - 1, 0, JumpsMax);
+	}
 
 	Dip(5.f, 1.f);
 
@@ -1416,7 +1433,7 @@ bool AMainCharacter::CanJumpInternal_Implementation() const
 	bool isTimerActive = GetWorld()->GetTimerManager().IsTimerActive(UnCrouchTimerHandle); // can't jump if there is an obstacle above the player
 	bool isSlideTLActive = SlideTL->IsActive();
 	bool selected = isSlideTLActive ? SlideTL->GetPlaybackPosition() > 0.25f : true;
-	return (canJump || remainingTime > 0.f || JumpsLeft > 0) && (!isTimerActive && selected);
+	return (canJump || remainingTime > 0.f || JumpsLeft > 0 || HitResLeft.bBlockingHit || HitResRight.bBlockingHit) && (!isTimerActive && selected);
 }
 
 void AMainCharacter::CustomJump()

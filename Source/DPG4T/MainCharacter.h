@@ -515,6 +515,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	float currentAngle = 0.f;
 
+	FHitResult HitResLeft;
+	FHitResult HitResRight;
+
 	void ClimbEnd();
 
 public:
