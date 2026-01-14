@@ -305,7 +305,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 	
-	if (/* && !haveMantled && */GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
+	if (/* && !haveMantled && */GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && !ClimbTL->IsPlaying())
 	{
 
 		NewMantleCheck();
@@ -442,8 +442,8 @@ bool AMainCharacter::NewMantleCheck()
 
 		FVector ForwardEndVector = StartLocation + GetActorForwardVector() * 75.f;
 
-		FVector RightForwardVector = StartLocation + GetFirstPersonCameraComponent()->GetRightVector() * 70.f;
-		FVector LeftForwardVector = StartLocation - GetFirstPersonCameraComponent()->GetRightVector() * 70.f;
+		FVector RightForwardVector = StartLocation + GetFirstPersonCameraComponent()->GetRightVector() * 55.f;
+		FVector LeftForwardVector = StartLocation - GetFirstPersonCameraComponent()->GetRightVector() * 55.f;
 
 		FHitResult HitResForward;
 
@@ -1379,7 +1379,7 @@ void AMainCharacter::OnJumped_Implementation()
 	{
 		FVector StartLocation = GetActorLocation();
 
-		FVector ForwardEndVector = GetActorForwardVector() *75.f;
+		FVector ForwardEndVector = GetActorForwardVector();// *75.f;
 		if (HitResLeft.bBlockingHit)
 		{
 
