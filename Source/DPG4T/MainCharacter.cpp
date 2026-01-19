@@ -510,6 +510,7 @@ void AMainCharacter::NewMantleStart(float Angle)
 	
 	currentAngle = CurrentRotation.Roll;
 	targetAngle = Angle;
+	DashesLeft = UKismetMathLibrary::Max(DashesLeft, 1);
 	if (!ClimbTL->IsPlaying())
 	{
 
@@ -688,41 +689,71 @@ void AMainCharacter::StartDash()
 {
 	if (DashesLeft != 0 && !isDashing)
 	{
+
+		FVector TargetVelocity;
+
+		//CharacterVelocity
+		FVector CurrentVelocity = GetCharacterMovement()->Velocity;
+		FVector NormalizedCurrentVelocity = CurrentVelocity.GetSafeNormal();
+
+		//CameraDirection
+		FVector CamDirection = GetController()->GetControlRotation().Vector();
+		FVector NormalizedCamDir = CamDirection.GetSafeNormal();
+
+		float ResultSkalar = NormalizedCamDir.X * NormalizedCurrentVelocity.X + NormalizedCamDir.Y * NormalizedCurrentVelocity.Y;
+
+		//Dash rollback to prevent 2 insta dashes
 		GetWorldTimerManager().SetTimer(DashTime, this, &AMainCharacter::EndDash, 0.25f, true);
-		
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
-		FVector CurrentVelocity = FVector(
-			GetCharacterMovement()->Velocity.X,
-			GetCharacterMovement()->Velocity.Y,
-			GetCharacterMovement()->Velocity.Z);
-
-		if (GetCharacterMovement()->Velocity == FVector(0.f, 0.f, 0.f))
+		if (ResultSkalar <= 0.1f)
 		{
-			CurrentVelocity = FVector(
-				GetActorForwardVector().X * 500,
-				GetActorForwardVector().Y * 500,
-				0.f);
+			
+			if ((GetCharacterMovement()->Velocity.X != 0.f || GetCharacterMovement()->Velocity.Y != 0.f) && NormalizedCamDir.Z <=0.6f)
+			{
+				//Dash towards velocity direction
+				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
+			}
+			else
+			{
+				//Dash towards camera looking direction
+				TargetVelocity = NormalizedCamDir * 100.f;
+			}			
 		}
+		else
+		{
+			if (ResultSkalar <= 0.9f && NormalizedCamDir.Z <= 0.6f)
+			{
+				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
+
+			}
+			else
+			{
+				TargetVelocity = NormalizedCamDir * 100.f;
+			}
+
+		}
+
+
+		//Character properties change
+		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 
 		GetCharacterMovement()->GravityScale = 0.f;
 		GetCharacterMovement()->AirControl = 0;
 		GetCharacterMovement()->BrakingFrictionFactor = 1.5f;
 		GetCharacterMovement()->GroundFriction = 7.f;
-		GetCharacterMovement()->FallingLateralFriction = 9.0f;
+
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 		GetController()->SetIgnoreMoveInput(true);
 
-		LastVelocity = FVector(CurrentVelocity.X, CurrentVelocity.Y, 0.f);
+		LastVelocity = TargetVelocity;
 
-		DashDirection = FVector(LastVelocity.X * DashStrenght, LastVelocity.Y * DashStrenght, 0);
-
+		DashDirection = FVector(LastVelocity.X * DashStrenght, LastVelocity.Y * DashStrenght, LastVelocity.Z * DashStrenght);
+		
 		DashDirection.X = FMath::Clamp(DashDirection.X, -10000.f, 10000.f);
 		DashDirection.Y = FMath::Clamp(DashDirection.Y, -10000.f, 10000.f);
-	
-		UE_LOG(LogTemplateCharacter, Error, TEXT("Velocity: %s"), *DashDirection.ToString());
-
-		GetCharacterMovement()->Velocity = FVector(DashDirection.X, DashDirection.Y, 0);
+		DashDirection.Z = FMath::Clamp(DashDirection.Z, -10000.f, 10000.f);
+		GetCharacterMovement()->Velocity = DashDirection; //FVector(DashDirection.X, DashDirection.Y, 0);
 
 		DashCamTL->PlayFromStart();
 
@@ -747,7 +778,7 @@ void AMainCharacter::EndDash()
 	GetCharacterMovement()->FallingLateralFriction = 0.f;
 
 	GetController()->SetIgnoreMoveInput(false);
-	GetCharacterMovement()->Velocity = LastVelocity;
+	//GetCharacterMovement()->Velocity = LastVelocity * 1.3f;
 
 	if (DashesLeft != 0)
 	{
