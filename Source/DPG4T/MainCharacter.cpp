@@ -707,8 +707,10 @@ void AMainCharacter::StartDash()
 
 		if (ResultSkalar <= 0.1f)
 		{
+			FVector LastInputVector = GetCharacterMovement()->GetLastInputVector().GetSafeNormal();
+			float LastInputSkalar = LastInputVector.X * NormalizedCurrentVelocity.X + LastInputVector.Y * NormalizedCurrentVelocity.Y;
 			
-			if ((GetCharacterMovement()->Velocity.X != 0.f || GetCharacterMovement()->Velocity.Y != 0.f) && NormalizedCamDir.Z <=0.6f)
+			if ((GetCharacterMovement()->Velocity.X != 0.f || GetCharacterMovement()->Velocity.Y != 0.f) && NormalizedCamDir.Z <=0.6f && LastInputSkalar >=0.85f)
 			{
 				//Dash towards velocity direction
 				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
@@ -721,7 +723,7 @@ void AMainCharacter::StartDash()
 		}
 		else
 		{
-			if (ResultSkalar <= 0.9f && NormalizedCamDir.Z <= 0.6f)
+			if (ResultSkalar <= 0.9f && NormalizedCamDir.Z <= 0.5f)
 			{
 				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
 
@@ -753,7 +755,7 @@ void AMainCharacter::StartDash()
 		DashDirection.X = FMath::Clamp(DashDirection.X, -10000.f, 10000.f);
 		DashDirection.Y = FMath::Clamp(DashDirection.Y, -10000.f, 10000.f);
 		DashDirection.Z = FMath::Clamp(DashDirection.Z, -10000.f, 10000.f);
-		GetCharacterMovement()->Velocity = DashDirection; //FVector(DashDirection.X, DashDirection.Y, 0);
+		GetCharacterMovement()->Velocity = DashDirection; 
 
 		DashCamTL->PlayFromStart();
 
