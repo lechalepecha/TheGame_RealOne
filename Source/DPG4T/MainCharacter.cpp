@@ -714,27 +714,47 @@ void AMainCharacter::StartDash()
 			{
 				//Dash towards velocity direction
 				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
+
 			}
 			else
 			{
 				//Dash towards camera looking direction
-				TargetVelocity = NormalizedCamDir * 100.f;
+				if (NormalizedCamDir.Z > 0.f)
+				{
+					TargetVelocity = NormalizedCamDir * 75.f;
+				}
+				else
+				{
+					TargetVelocity = GetActorForwardVector().GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
+				}
+
 			}			
 		}
 		else
 		{
-			if (ResultSkalar <= 0.9f && NormalizedCamDir.Z <= 0.5f)
+			if (ResultSkalar <= 0.9f || NormalizedCamDir.Z <= 0.4f)
 			{
 				TargetVelocity = GetCharacterMovement()->Velocity.GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
-
 			}
 			else
 			{
-				TargetVelocity = NormalizedCamDir * 100.f;
+				TargetVelocity = NormalizedCamDir * 75.f;
+
+				/*if (NormalizedCamDir.Z > 0.f)
+				{
+				}
+				else
+				{
+					TargetVelocity = GetActorForwardVector().GetSafeNormal() * 100.f * FVector(1.f, 1.f, 0.f);
+					UE_LOG(LogTemp, Error, TEXT("Second if camera diraction: %f"), TargetVelocity);
+					UE_LOG(LogTemp, Error, TEXT("Second if ResultSkalar: %f"), ResultSkalar);
+					UE_LOG(LogTemp, Error, TEXT("Second if NormalizedCamDir: %f"), NormalizedCamDir.Z);
+				}*/
+
+
 			}
 
 		}
-
 
 		//Character properties change
 		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
@@ -780,7 +800,6 @@ void AMainCharacter::EndDash()
 	GetCharacterMovement()->FallingLateralFriction = 0.f;
 
 	GetController()->SetIgnoreMoveInput(false);
-	//GetCharacterMovement()->Velocity = LastVelocity * 1.3f;
 
 	if (DashesLeft != 0)
 	{
